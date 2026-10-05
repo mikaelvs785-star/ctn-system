@@ -7,7 +7,8 @@ describe('CreateUserDto', () => {
     nome: 'Ana',
     email: 'ana@escola.test',
     senha: 'uma-senha-longa',
-    role: 'ALUNO',
+    cpf: '52998224725',
+    role: 'PROFESSOR',
   };
 
   it('accepts a valid registration', async () => {

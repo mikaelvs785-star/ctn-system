@@ -17,7 +17,8 @@ describe('UsersService', () => {
         nome: 'Ana',
         email: 'ana@example.com',
         senha: 'uma-senha-longa',
-        role: Role.ALUNO,
+        cpf: '52998224725',
+        role: Role.PROFESSOR,
       }),
     ).rejects.toBeInstanceOf(ConflictException);
   });

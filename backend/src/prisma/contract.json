@@ -554,6 +554,13 @@
                   "kind": "scalar"
                 }
               },
+              "capa": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "categoria": {
                 "nullable": false,
                 "type": {
@@ -595,13 +602,6 @@
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
-              },
-              "capa": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
               }
             },
             "relations": {
@@ -626,6 +626,9 @@
                 "authorId": {
                   "column": "authorId"
                 },
+                "capa": {
+                  "column": "capa"
+                },
                 "categoria": {
                   "column": "categoria"
                 },
@@ -643,9 +646,6 @@
                 },
                 "updatedAt": {
                   "column": "updatedAt"
-                },
-                "capa": {
-                  "column": "capa"
                 }
               },
               "namespaceId": "public",
@@ -868,6 +868,13 @@
                   "kind": "scalar"
                 }
               },
+              "cpf": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -910,24 +917,17 @@
                   "kind": "scalar"
                 }
               },
-              "updatedAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "cpf": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "statusCadastro": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               }
@@ -1059,6 +1059,9 @@
                 "ativo": {
                   "column": "ativo"
                 },
+                "cpf": {
+                  "column": "cpf"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -1077,14 +1080,11 @@
                 "senhaHash": {
                   "column": "senhaHash"
                 },
-                "updatedAt": {
-                  "column": "updatedAt"
-                },
-                "cpf": {
-                  "column": "cpf"
-                },
                 "statusCadastro": {
                   "column": "statusCadastro"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
                 }
               },
               "namespaceId": "public",
@@ -1512,6 +1512,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "capa": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "categoria": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1549,11 +1554,6 @@
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
-                },
-                "capa": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -1785,6 +1785,11 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
+                "cpf": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -1823,24 +1828,19 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "statusCadastro": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ATIVO"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": false
-                },
-                "cpf": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "statusCadastro": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false,
-                  "default": {
-                    "kind": "literal",
-                    "value": "ATIVO"
-                  }
                 }
               },
               "foreignKeys": [
@@ -1887,13 +1887,6 @@
                     "cpf"
                   ]
                 }
-              ],
-              "checks": [
-                {
-                  "expression": "\\\"statusCadastro\\\" IN ('PENDENTE', 'ATIVO', 'RECUSADO', 'DESATIVADO')",
-                  "name": "user_statusCadastro_check",
-                  "prefix": "user_statusCadastro_check"
-                }
               ]
             }
           },
@@ -1914,7 +1907,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d4775961707d04e206a07aadb0d8b6ebb4bf9a79e453fe70426438ad0a627cd9"
+    "storageHash": "8d00eb777311679b39a625da87ce5188fe82b9f4d7009881fe689a629af88c30"
   },
   "execution": {
     "executionHash": "1b1788b41e974873872043d6ef3a6bc0224db43f22c0f7309f976fcad1429559",

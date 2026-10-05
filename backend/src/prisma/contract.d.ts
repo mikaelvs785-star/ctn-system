@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d4775961707d04e206a07aadb0d8b6ebb4bf9a79e453fe70426438ad0a627cd9'>;
+  StorageHashBase<'8d00eb777311679b39a625da87ce5188fe82b9f4d7009881fe689a629af88c30'>;
 export type ExecutionHash =
   ExecutionHashBase<'1b1788b41e974873872043d6ef3a6bc0224db43f22c0f7309f976fcad1429559'>;
 export type ProfileHash =
@@ -282,6 +282,7 @@ export type FieldOutputTypes = {
       readonly titulo: CodecTypes['pg/text@1']['output'];
       readonly conteudo: CodecTypes['pg/text@1']['output'];
       readonly categoria: CodecTypes['pg/text@1']['output'];
+      readonly capa: CodecTypes['pg/text@1']['output'] | null;
       readonly authorId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -307,9 +308,11 @@ export type FieldOutputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly nome: CodecTypes['pg/text@1']['output'];
-      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'] | null;
+      readonly cpf: CodecTypes['pg/text@1']['output'] | null;
       readonly senhaHash: CodecTypes['pg/text@1']['output'];
       readonly ativo: CodecTypes['pg/bool@1']['output'];
+      readonly statusCadastro: CodecTypes['pg/text@1']['output'];
       readonly roleId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -359,6 +362,7 @@ export type FieldInputTypes = {
       readonly titulo: CodecTypes['pg/text@1']['input'];
       readonly conteudo: CodecTypes['pg/text@1']['input'];
       readonly categoria: CodecTypes['pg/text@1']['input'];
+      readonly capa: CodecTypes['pg/text@1']['input'] | null;
       readonly authorId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -384,9 +388,11 @@ export type FieldInputTypes = {
     readonly User: {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly nome: CodecTypes['pg/text@1']['input'];
-      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'] | null;
+      readonly cpf: CodecTypes['pg/text@1']['input'] | null;
       readonly senhaHash: CodecTypes['pg/text@1']['input'];
       readonly ativo: CodecTypes['pg/bool@1']['input'];
+      readonly statusCadastro: CodecTypes['pg/text@1']['input'];
       readonly roleId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -433,6 +439,7 @@ export type StorageColumnTypes = {
     };
     readonly news: {
       readonly authorId: CodecTypes['pg/int4@1']['output'];
+      readonly capa: CodecTypes['pg/text@1']['output'] | null;
       readonly categoria: CodecTypes['pg/text@1']['output'];
       readonly conteudo: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -460,12 +467,14 @@ export type StorageColumnTypes = {
     };
     readonly user: {
       readonly ativo: CodecTypes['pg/bool@1']['output'];
+      readonly cpf: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
-      readonly email: CodecTypes['pg/text@1']['output'];
+      readonly email: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly nome: CodecTypes['pg/text@1']['output'];
       readonly roleId: CodecTypes['pg/int4@1']['output'];
       readonly senhaHash: CodecTypes['pg/text@1']['output'];
+      readonly statusCadastro: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
   };
@@ -510,6 +519,7 @@ export type StorageColumnInputTypes = {
     };
     readonly news: {
       readonly authorId: CodecTypes['pg/int4@1']['input'];
+      readonly capa: CodecTypes['pg/text@1']['input'] | null;
       readonly categoria: CodecTypes['pg/text@1']['input'];
       readonly conteudo: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -537,12 +547,14 @@ export type StorageColumnInputTypes = {
     };
     readonly user: {
       readonly ativo: CodecTypes['pg/bool@1']['input'];
+      readonly cpf: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
-      readonly email: CodecTypes['pg/text@1']['input'];
+      readonly email: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly nome: CodecTypes['pg/text@1']['input'];
       readonly roleId: CodecTypes['pg/int4@1']['input'];
       readonly senhaHash: CodecTypes['pg/text@1']['input'];
+      readonly statusCadastro: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
   };
@@ -915,6 +927,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly capa: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly authorId: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -1107,7 +1124,12 @@ type ContractBase = Omit<
                 readonly email: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
+                };
+                readonly cpf: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly senhaHash: {
                   readonly nativeType: 'text';
@@ -1121,6 +1143,15 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly statusCadastro: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ATIVO'>;
                   };
                 };
                 readonly roleId: {
@@ -1141,7 +1172,10 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['email'] }];
+              uniques: readonly [
+                { readonly columns: readonly ['email'] },
+                { readonly columns: readonly ['cpf'] },
+              ];
               indexes: readonly [
                 {
                   readonly name: 'user_roleId_idx_ffccc9a4';
@@ -1538,6 +1572,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly capa: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly authorId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -1575,6 +1613,7 @@ type ContractBase = Omit<
                 readonly titulo: { readonly column: 'titulo' };
                 readonly conteudo: { readonly column: 'conteudo' };
                 readonly categoria: { readonly column: 'categoria' };
+                readonly capa: { readonly column: 'capa' };
                 readonly authorId: { readonly column: 'authorId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -1730,7 +1769,11 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly email: {
-                readonly nullable: false;
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly cpf: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly senhaHash: {
@@ -1740,6 +1783,10 @@ type ContractBase = Omit<
               readonly ativo: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly statusCadastro: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly roleId: {
                 readonly nullable: false;
@@ -1851,8 +1898,10 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly nome: { readonly column: 'nome' };
                 readonly email: { readonly column: 'email' };
+                readonly cpf: { readonly column: 'cpf' };
                 readonly senhaHash: { readonly column: 'senhaHash' };
                 readonly ativo: { readonly column: 'ativo' };
+                readonly statusCadastro: { readonly column: 'statusCadastro' };
                 readonly roleId: { readonly column: 'roleId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
