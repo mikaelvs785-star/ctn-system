@@ -28,21 +28,12 @@ function communityIcon(index: number): IconName {
   return (['sigma', 'chart', 'science', 'users', 'book'] as IconName[])[index % 5]
 }
 
-function relativeDate(value: string) {
-  if (!value) return 'Sem atividade'
-  const difference = Date.now() - new Date(value).getTime()
-  const hours = Math.max(0, Math.floor(difference / 3_600_000))
-  if (hours < 1) return 'Agora'
-  if (hours < 24) return `Há ${hours}h`
-  const days = Math.floor(hours / 24)
-  return days === 1 ? 'Há 1 dia' : `Há ${days} dias`
-}
-
 export default function StudentCommunitiesPage() {
   const { token, clearSession } = useAuth()
   const navigate = useNavigate()
   const [communities, setCommunities] = useState<CommunitySummary[]>([])
-  const [tab, setTab] = useState<Tab>('mine')
+  const [tab, setTab] = useState<Tab>('explore')
+  const [subject, setSubject] = useState('Todas')
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const [loading, setLoading] = useState(true)
@@ -74,19 +65,17 @@ export default function StudentCommunitiesPage() {
   const visibleCommunities = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLocaleLowerCase('pt-BR')
     return communities.filter((community) => {
-      const matchesTab = tab === 'mine' ? community.participating : !community.participating
+      const matchesTab = tab === 'mine' ? community.participating : true
       const matchesQuery = !normalizedQuery ||
         community.nome.toLocaleLowerCase('pt-BR').includes(normalizedQuery) ||
         community.descricao.toLocaleLowerCase('pt-BR').includes(normalizedQuery) ||
         community.creatorName.toLocaleLowerCase('pt-BR').includes(normalizedQuery)
-      return matchesTab && matchesQuery
+      const text = `${community.nome} ${community.descricao}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      const terms: Record<string, string[]> = { Esportes: ['esport', 'jog', 'treino'], Ciências: ['ciencia', 'experimento', 'pesquisa'], Cultura: ['cultura', 'leitura', 'arte', 'musica'] }
+      const matchesSubject = subject === 'Todas' || (terms[subject] || []).some(term => text.includes(term))
+      return matchesTab && matchesQuery && matchesSubject
     })
-  }, [communities, deferredQuery, tab])
-
-  const mostActive = useMemo(
-    () => [...communities].sort((a, b) => b.postCount - a.postCount).slice(0, 4),
-    [communities],
-  )
+  }, [communities, deferredQuery, tab, subject])
 
   async function handleCommunity(community: CommunitySummary) {
     if (community.participating) {
@@ -140,6 +129,7 @@ export default function StudentCommunitiesPage() {
           <Icon name="search" />
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar comunidade..." />
         </label>
+        <div className="community-subject-filters" role="group" aria-label="Assuntos">{['Todas', 'Esportes', 'Ciências', 'Cultura'].map(label => <button type="button" key={label} aria-pressed={subject === label} onClick={() => setSubject(label)}>{label}</button>)}</div>
         <span>{visibleCommunities.length} resultado{visibleCommunities.length === 1 ? '' : 's'}</span>
       </div>
 
@@ -149,19 +139,10 @@ export default function StudentCommunitiesPage() {
         <section className="community-cards" aria-live="polite">
           {visibleCommunities.length ? visibleCommunities.map((community, index) => (
             <article className="community-card" key={community.id}>
-              <div className="community-card__icon"><Icon name={communityIcon(index)} /></div>
-              <div className="community-card__content">
-                <div className="community-card__title"><h2>{community.nome}</h2>{community.participating ? <span>Participando</span> : null}</div>
-                <p>{community.descricao}</p>
-                <div className="community-card__creator"><Icon name="person" /> Prof. {community.creatorName}</div>
-                <div className="community-card__metrics">
-                  <span><Icon name="users" /> {community.memberCount} participantes</span>
-                  <span><Icon name="posts" /> {community.postCount} publicações</span>
-                  <span><Icon name="clock" /> {relativeDate(community.updatedAt)}</span>
-                </div>
-              </div>
+              <div className="community-card__cover">{community.capa ? <img src={community.capa} alt="" loading="lazy" /> : <Icon name={communityIcon(index)} />}<h2>{community.nome}</h2></div>
+              <div className="community-card__content"><p>{community.descricao}</p><div className="community-card__metrics"><span><Icon name="users" /> {community.memberCount} participantes</span>{community.participating ? <span className="community-participating">Você participa</span> : null}</div></div>
               <button type="button" onClick={() => void handleCommunity(community)} disabled={joiningId !== null}>
-                {joiningId === community.id ? 'Entrando...' : community.participating ? 'Abrir' : 'Participar'}
+                {joiningId === community.id ? 'Entrando...' : community.participating ? 'Acessar comunidade' : 'Entrar na comunidade'}
               </button>
             </article>
           )) : (
@@ -174,20 +155,7 @@ export default function StudentCommunitiesPage() {
           )}
         </section>
 
-        <aside className="active-communities">
-          <h2>Mais ativas</h2>
-          {mostActive.map((community, index) => (
-            <button type="button" key={community.id} onClick={() => void handleCommunity(community)}>
-              <span className="active-communities__icon"><Icon name={communityIcon(index)} /></span>
-              <span><strong>{community.nome}</strong><small>{community.postCount} publicações</small></span>
-              <Icon name="arrow" />
-            </button>
-          ))}
-          <div className="active-communities__tip">
-            <Icon name="users" />
-            <p>Participe das comunidades e fortaleça sua jornada no CEMTN.</p>
-          </div>
-        </aside>
+
       </div>
     </main>
   )
