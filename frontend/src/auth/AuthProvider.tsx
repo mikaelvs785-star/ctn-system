@@ -128,9 +128,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     return () => controller.abort()
   }, [clearSession, token])
 
+  const updatePhoto = useCallback((foto: string | null) => {
+    setUser(current => current ? { ...current, foto } : current)
+  }, [])
+
   const value = useMemo(
-    () => ({ status, user, token, login, logout, clearSession }),
-    [clearSession, login, logout, status, token, user],
+    () => ({ status, user, token, login, logout, clearSession, updatePhoto }),
+    [clearSession, login, logout, status, token, user, updatePhoto],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
