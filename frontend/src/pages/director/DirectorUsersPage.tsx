@@ -1,5 +1,5 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { listUsers, updateUserRegistrationStatus, type SystemUser } from '../../api/users'
 import { useAuth } from '../../auth/auth-context'
 import './DirectorUsersPage.css'
@@ -30,9 +30,11 @@ function formatDate(value: string) {
 export default function DirectorUsersPage() {
   const { token, user: authenticatedUser, clearSession } = useAuth()
   const [users, setUsers] = useState<SystemUser[]>([])
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
-  const [filter, setFilter] = useState<Filter>('ALL')
+  const [params] = useSearchParams()
+  const [filter, setFilter] = useState<Filter>(() => params.get('filtro') === 'PENDENTE' ? 'PENDENTE' : 'ALL')
   const [loading, setLoading] = useState(true)
   const [changingId, setChangingId] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -66,9 +68,9 @@ export default function DirectorUsersPage() {
       const matchesFilter = filter === 'ALL'
         || (filter === 'PENDENTE' ? item.statusCadastro === 'PENDENTE' : item.role === filter)
       const haystack = [item.nome, item.email ?? '', item.cpfMascarado ?? ''].join(' ').toLocaleLowerCase('pt-BR')
-      return matchesFilter && (!normalized || haystack.includes(normalized))
+      return matchesFilter && (statusFilter === 'ALL' || item.statusCadastro === statusFilter) && (!normalized || haystack.includes(normalized))
     })
-  }, [deferredQuery, filter, users])
+  }, [deferredQuery, filter, users, statusFilter])
 
   const counts = useMemo(() => ({
     total: users.length,
@@ -117,7 +119,8 @@ export default function DirectorUsersPage() {
       <section className="users-page-content">
         <div className="users-page-toolbar">
           <label><span className="sr-only">Buscar usuário</span><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nome, e-mail ou CPF..." /></label>
-          <div role="tablist">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{item.label}{item.value === 'PENDENTE' && counts.pending ? <b className="pending-count">{counts.pending}</b> : null}</button>)}</div>
+          <label className="user-status-filter">Status<select value={statusFilter} onChange={event => setStatusFilter(event.target.value)}><option value="ALL">Todos os status</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <div role="tablist" aria-label="Perfis de usuários">{filters.map((item) => <button key={item.value} type="button" role="tab" aria-selected={filter === item.value} className={filter === item.value ? 'active' : ''} onClick={() => setFilter(item.value)}>{item.label}{item.value === 'PENDENTE' && counts.pending ? <b className="pending-count">{counts.pending}</b> : null}</button>)}</div>
         </div>
 
         {errorMessage ? <p className="users-page-message users-page-message--error" role="alert">{errorMessage}</p> : null}
@@ -127,7 +130,7 @@ export default function DirectorUsersPage() {
         <div className="users-list">
           {visibleUsers.map((item) => (
             <article key={item.id} className={item.statusCadastro === 'PENDENTE' ? 'user-row-pending' : ''}>
-              <div className="users-list__identity"><span>{initials(item.nome)}</span><div><strong>{item.nome}</strong><small>{item.email ?? 'Aluno cadastrado por CPF'}</small></div></div>
+              <div className="users-list__identity"><span>{initials(item.nome)}</span><div><strong>{item.nome}</strong><small>{item.email ?? 'Cadastro por CPF'}</small></div></div>
               <div data-label="Perfil"><b>{roleLabels[item.role] ?? item.role}</b></div>
               <div data-label="CPF"><small>{item.cpfMascarado ?? 'Não cadastrado'}</small></div>
               <div data-label="Status"><i className={item.statusCadastro === 'ATIVO' ? 'active' : item.statusCadastro === 'PENDENTE' ? 'pending' : ''}><em />{statusLabels[item.statusCadastro]}</i></div>
