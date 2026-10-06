@@ -79,6 +79,13 @@ export class ResetPasswordDto {
   @IsString() @MinLength(12) @MaxLength(128) novaSenha: string;
 }
 
+export class UpdatePhotoDto {
+  @IsString()
+  @MaxLength(400000)
+  @Matches(/^(?:data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2})?$/, { message: 'Envie uma foto JPEG válida' })
+  foto: string;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
@@ -105,6 +112,13 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   me(@Req() req: AuthRequest) {
     return req.user;
+  }
+
+  @Post('photo')
+  @Header('Cache-Control', 'no-store')
+  async updatePhoto(@Req() req: AuthRequest, @Body() dto: UpdatePhotoDto) {
+    await this.auth.limit('photo:' + req.user.id);
+    return this.auth.updatePhoto(req.user.id, dto.foto);
   }
 
   @Post('logout')
