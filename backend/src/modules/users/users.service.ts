@@ -63,7 +63,7 @@ export class UsersService {
           (nome, email, cpf, "senhaHash", ativo, "statusCadastro", "roleId", "updatedAt")
          SELECT $1, $2, $3, $4, true, 'ATIVO', id, now()
          FROM public.role WHERE name = $5 RETURNING id`,
-        [dto.nome.trim(), dto.email.trim().toLowerCase(), cpf, hash, dto.role],
+        [dto.nome.trim(), dto.email?.trim().toLowerCase() || null, cpf, hash, dto.role],
       );
       if (!user) throw new BadRequestException('Perfil não encontrado');
       return this.findOne(user.id);
