@@ -79,21 +79,13 @@ export default function DirectorDashboard() {
     ...communities.map((item) => ({ id: `community-${item.id}`, title: 'Comunidade criada', description: `“${item.nome}” foi criada por ${item.creatorName}.`, date: item.createdAt, icon: 'community' as const })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3), [communities, news, users])
 
-  const chart = [
-    { label: 'Diretores', value: counts.directors },
-    { label: 'Professores', value: counts.teachers },
-    { label: 'Alunos', value: counts.students },
-    { label: 'Outros', value: counts.others },
-  ]
-  const chartMax = Math.max(...chart.map((item) => item.value), 1)
-
   if (loading) return <main className="director-feedback" aria-live="polite"><span /><p>Carregando painel da Direção...</p></main>
   if (errorMessage) return <main className="director-feedback"><h1>Não foi possível abrir o painel</h1><p>{errorMessage}</p><button type="button" onClick={() => void load()}><Icon name="refresh" /> Tentar novamente</button></main>
 
   return (
     <main className="director-dashboard">
-      <header className="director-page-title"><h1>Painel da Direção</h1><p>Visão geral do CEMTN e das principais atividades da sua escola.</p></header>
-      <section className="director-welcome"><h2>Olá, {user?.nome.split(' ')[0]}.</h2><span>Diretor</span><p>Aqui estão os dados mais recentes da sua escola.</p></section>
+      <header className="director-page-title"><div><h1>Visão geral</h1><p>Olá, {user?.nome.split(' ')[0]}. Acompanhe as pendências da escola.</p></div><Link className="journal-create" to="/diretor/usuarios/novo">+ Cadastrar professor ou diretor</Link></header>
+
 
       <section className="director-stats" aria-label="Resumo do sistema">
         <Link to="/diretor/usuarios"><span><Icon name="users" /></span><div><small>Usuários ativos</small><strong>{counts.active}</strong></div><Icon name="arrow" /></Link>
@@ -104,25 +96,23 @@ export default function DirectorDashboard() {
 
       <div className="director-main-grid">
         <section className="director-card director-activity">
-          <div className="director-card-title"><h2>Atividade recente</h2><Link to="/diretor/usuarios">Ver todas <Icon name="arrow" /></Link></div>
-          {activities.length ? activities.map((activity) => (
-            <article key={activity.id}><i /><span><Icon name={activity.icon} /></span><div><strong>{activity.title}</strong><p>{activity.description}</p></div><time dateTime={activity.date}>{shortDate(activity.date)}</time></article>
-          )) : <p className="director-empty">Ainda não há atividades registradas.</p>}
+          <div className="director-card-title"><h2>Alunos aguardando aprovação</h2><Link to="/diretor/usuarios">Ver todas <Icon name="arrow" /></Link></div>
+          {users.filter(item => item.statusCadastro === 'PENDENTE').map(item => <article key={item.id}><div><strong>{item.nome}</strong><p>Cadastro de aluno</p></div><Link to="/diretor/usuarios?filtro=PENDENTE">Revisar cadastro →</Link></article>)}
+          {!users.some(item => item.statusCadastro === 'PENDENTE') ? <p className="director-empty">Nenhum cadastro aguardando aprovação.</p> : null}
         </section>
 
         <section className="director-card director-actions">
           <div className="director-card-title"><h2>Ações rápidas</h2></div>
-          <Link to="/diretor/usuarios/novo"><span><Icon name="users" /></span><strong>Cadastrar usuário</strong><Icon name="arrow" /></Link>
+          <Link to="/diretor/usuarios/novo"><span><Icon name="users" /></span><strong>Cadastrar professor ou diretor</strong><Icon name="arrow" /></Link>
           <Link to="/diretor/jornal/nova"><span><Icon name="news" /></span><strong>Nova publicação</strong><Icon name="arrow" /></Link>
           <Link to="/diretor/comunidades/nova"><span><Icon name="community" /></span><strong>Criar comunidade</strong><Icon name="arrow" /></Link>
         </section>
       </div>
 
-      <section className="director-card director-chart">
-        <div className="director-card-title"><h2>Distribuição de usuários</h2></div>
-        <div className="director-chart__plot">
-          {chart.map((item) => <div key={item.label}><strong>{item.value}</strong><span style={{ height: `${Math.max((item.value / chartMax) * 100, item.value ? 8 : 2)}%` }} /><small>{item.label}</small></div>)}
-        </div>
+      <section className="director-card director-activity recent-activity">
+        <div className="director-card-title"><h2>Atividade recente</h2></div>
+        {activities.map(activity => <article key={activity.id}><div><strong>{activity.title}</strong><p>{activity.description}</p></div><time dateTime={activity.date}>{shortDate(activity.date)}</time></article>)}
+        {!activities.length ? <p className="director-empty">Ainda não há atividades registradas.</p> : null}
       </section>
     </main>
   )
