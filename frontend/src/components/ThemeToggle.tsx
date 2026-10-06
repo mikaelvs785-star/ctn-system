@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getPreferredTheme, saveTheme, type Theme } from '../theme/theme'
 
 interface ThemeToggleProps {
@@ -7,6 +7,11 @@ interface ThemeToggleProps {
 
 export default function ThemeToggle({ className = '' }: ThemeToggleProps) {
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme())
+  useEffect(() => {
+    const update = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
+    window.addEventListener('cemtn-theme-change', update)
+    return () => window.removeEventListener('cemtn-theme-change', update)
+  }, [])
   const isDark = theme === 'dark'
   const buttonClassName = ['theme-toggle', className].filter(Boolean).join(' ')
 
