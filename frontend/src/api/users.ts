@@ -19,7 +19,7 @@ export interface SystemUser {
 
 export interface CreateUserInput {
   nome: string
-  email: string
+  email?: string
   cpf: string
   senha: string
   role: CreateUserRole
