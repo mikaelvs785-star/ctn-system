@@ -27,7 +27,8 @@
     "db:seed": "node scripts/database.mjs seed",
     "db:cleanup": "node scripts/database.mjs cleanup",
     "admin:create": "npm run build && node scripts/create-director.mjs",
-    "db:migrate:cpf": "node scripts/migrate-cpf-registration.mjs"
+    "db:migrate:cpf": "node scripts/migrate-cpf-registration.mjs",
+    "db:migrate:community-covers": "node scripts/migrate-community-covers.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
