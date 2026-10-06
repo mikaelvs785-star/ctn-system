@@ -122,7 +122,7 @@ export default function AppLayout() {
         </div>
 
         <div className="app-sidebar__profile">
-          <div className="app-avatar">{getInitials(user.nome)}</div>
+          <div className="app-avatar">{user.foto ? <img src={user.foto} alt="" /> : getInitials(user.nome)}</div>
           <div><strong>{user.nome}</strong><small>{roleLabels[user.role] ?? user.role}</small></div>
           <button className="app-icon-button" type="button" onClick={handleLogout} disabled={loggingOut} aria-label="Sair do sistema">
             <Icon name="logout" />
@@ -145,7 +145,7 @@ export default function AppLayout() {
             <button className="app-icon-button app-notification" type="button" aria-label="Notificações">
               <Icon name="bell" /><span />
             </button>
-            <div className="app-avatar app-avatar--small">{getInitials(user.nome)}</div>
+            <div className="app-avatar app-avatar--small">{user.foto ? <img src={user.foto} alt="" /> : getInitials(user.nome)}</div>
             <div className="app-topbar__user"><strong>{user.nome}</strong><small>{roleLabels[user.role] ?? user.role}</small></div>
           </div>
         </header>
