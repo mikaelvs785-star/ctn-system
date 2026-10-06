@@ -31,6 +31,12 @@ export class UsersController {
     return this.usersService.findAll(page);
   }
 
+  @Get(':id/photo')
+  @Header('Cache-Control', 'no-store')
+  getPhoto(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getPhoto(id);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
