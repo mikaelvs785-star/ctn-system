@@ -4,6 +4,7 @@ export interface CommunitySummary {
   id: number
   nome: string
   descricao: string
+  capa?: string | null
   regras: string
   creatorId: number
   creatorName: string
@@ -158,7 +159,7 @@ export async function deleteCommunity(id: number, token: string) {
   await request(`/communities/${id}`, token, { method: 'DELETE' })
 }
 
-export async function createCommunity(input: { nome: string; descricao: string; regras: string }, token: string) {
+export async function createCommunity(input: { nome: string; descricao: string; regras: string; capa?: string }, token: string) {
   const data = await request('/communities', token, {
     method: 'POST',
     body: JSON.stringify(input),
@@ -167,7 +168,7 @@ export async function createCommunity(input: { nome: string; descricao: string; 
   return data
 }
 
-export async function updateCommunity(id: number, input: { nome: string; descricao: string; regras: string }, token: string) {
+export async function updateCommunity(id: number, input: { nome: string; descricao: string; regras: string; capa?: string }, token: string) {
   const data = await request(`/communities/${id}`, token, {
     method: 'PATCH',
     body: JSON.stringify(input),
