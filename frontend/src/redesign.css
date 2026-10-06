@@ -111,7 +111,7 @@ button:disabled {
 }
 .app-topbar {
   height: 64px;
-  padding: 0 32px;
+  padding: 0 24px;
 }
 .app-topbar__title {
   display: flex;
@@ -146,9 +146,11 @@ button:disabled {
 }
 .app-content > main {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 32px clamp(20px, 3vw, 48px) 64px;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 24px 48px;
 }
 .app-content h1 {
   font-size: clamp(26px, 2.4vw, 36px);
