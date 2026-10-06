@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { prepareProfilePhoto } from "../utils/profile-photo";
-import { changePassword, saveProfilePhoto } from "../api/profile";
+import { prepareOriginalPhoto, prepareProfilePhoto } from "../utils/profile-photo";
+import { changePassword, getProfilePhoto, saveProfilePhoto } from "../api/profile";
 import { useAuth } from "../auth/auth-context";
 import {
   getThemePreference,
@@ -8,6 +8,7 @@ import {
   type ThemePreference,
 } from "../theme/theme";
 import "./ProfilePage.css";
+import ProfilePhotoEditor from "../components/ProfilePhotoEditor";
 
 const roleLabels: Record<string, string> = {
   ALUNO: "Aluno",
@@ -22,6 +23,8 @@ export default function ProfilePage() {
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [photoNotice, setPhotoNotice] = useState("");
+  const [viewerPhoto, setViewerPhoto] = useState<string | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(false);
   const viewer = useRef<HTMLDialogElement>(null);
   const [source, setSource] = useState<File | string | null>(null);
   const [crop, setCrop] = useState({ zoom: 1, x: 50, y: 50 });
@@ -73,9 +76,31 @@ export default function ProfilePage() {
   async function savePhoto(foto: string) {
     if (!token || photoBusy) return;
     setPhotoBusy(true); setPhotoError(""); setPhotoNotice("");
-    try { const result = await saveProfilePhoto(token, foto && source ? await prepareProfilePhoto(source, crop.zoom, crop.x, crop.y) : foto); updatePhoto(result.foto); setPreview(null); setSource(null); setPhotoNotice(foto ? "Foto atualizada." : "Foto removida."); }
-    catch(e) { setPhotoError(e instanceof Error ? e.message : "Não foi possível salvar a foto."); }
+    try {
+      const original = foto && source ? await prepareOriginalPhoto(source) : undefined;
+      const framed = foto && source ? await prepareProfilePhoto(source,crop.zoom,crop.x,crop.y) : foto;
+      const result = await saveProfilePhoto(token,framed,original);
+      updatePhoto(result.foto); setPreview(null); setSource(null); setViewerPhoto(null);
+      setPhotoNotice(foto ? "Foto atualizada." : "Foto removida.");
+    } catch(e) { setPhotoError(e instanceof Error ? e.message : "Não foi possível salvar a foto."); }
     finally { setPhotoBusy(false); }
+  }
+  async function editPhoto() {
+    if(!token || photoBusy)return;
+    setPhotoBusy(true);setPhotoError("");setPhotoNotice("");
+    try {
+      const {original}=await getProfilePhoto(token);
+      if(!original)return;
+      setCrop({zoom:1,x:50,y:50});setSource(original);setPreview(await prepareProfilePhoto(original));
+    } catch(e) {setPhotoError(e instanceof Error ? e.message : "Não foi possível carregar a foto.");}
+    finally {setPhotoBusy(false);}
+  }
+  async function viewPhoto() {
+    if(!token || !user?.foto)return;
+    setViewerPhoto(user.foto);setViewerLoading(true);viewer.current?.showModal();
+    try {const {original}=await getProfilePhoto(token);setViewerPhoto(original || user.foto);}
+    catch {setPhotoError("Não foi possível carregar a original. Exibindo o recorte salvo.");}
+    finally {setViewerLoading(false);}
   }
   if (!user) return null;
   const fields = [
@@ -108,7 +133,7 @@ export default function ProfilePage() {
         <p>Gerencie seus dados e a segurança da sua conta.</p>
       </header>
       <section className="profile-identity">
-        <button type="button" className="profile-avatar" disabled={!preview && !user.foto} aria-label="Ver foto de perfil completa" onClick={() => viewer.current?.showModal()}>
+        <button type="button" className="profile-avatar" disabled={!user.foto || photoBusy} aria-label="Ver foto de perfil completa" onClick={() => void viewPhoto()}>
           {preview || user.foto ? <img src={preview || user.foto || ""} alt="Foto do seu perfil" /> : user.nome
             .trim()
             .split(/\s+/)
@@ -128,28 +153,20 @@ export default function ProfilePage() {
           <input type="file" accept="image/jpeg,image/png,image/webp" disabled={photoBusy} onChange={async event => {
             const file=event.target.files?.[0]; event.target.value=""; if(!file) return;
             setPhotoError(""); setPhotoNotice(""); setPhotoBusy(true);
-            try { const foto = await prepareProfilePhoto(file); setCrop({zoom:1,x:50,y:50}); setPreview(foto); setSource(file); } catch(e) { setPhotoError(e instanceof Error ? e.message : "Foto inválida."); } finally { setPhotoBusy(false); }
+            try { await prepareProfilePhoto(file); const original = await prepareOriginalPhoto(file); setCrop({zoom:1,x:50,y:50}); setPreview(await prepareProfilePhoto(original)); setSource(original); } catch(e) { setPhotoError(e instanceof Error ? e.message : "Foto inválida."); } finally { setPhotoBusy(false); }
           }} />
         </label>
-        {preview ? <><button type="button" disabled={photoBusy} onClick={()=>void savePhoto(preview)}>Salvar foto</button><button type="button" disabled={photoBusy} onClick={()=>{setPreview(null);setSource(null);}}>Cancelar</button></> : user.foto ? <><button type="button" disabled={photoBusy} onClick={()=>{setCrop({zoom:1,x:50,y:50});setSource(user.foto!);setPreview(user.foto!);}}>Ajustar enquadramento</button><button type="button" disabled={photoBusy} onClick={()=>void savePhoto("")}>Remover foto</button></> : null}
+        {!source && user.foto ? <><button type="button" disabled={photoBusy} onClick={()=>void editPhoto()}>Ajustar enquadramento</button><button type="button" disabled={photoBusy} onClick={()=>void savePhoto("")}>Remover foto</button></> : null}
         <small>JPEG, PNG ou WebP, até 8 MB. Ajuste o enquadramento antes de salvar. Clique na foto para ampliar.</small>
         {photoBusy ? <p role="status">Processando foto...</p> : null}
         {photoError ? <p role="alert">{photoError}</p> : null}
         {photoNotice ? <p role="status">{photoNotice}</p> : null}
       </section>
-      {source && preview ? <section className="profile-crop" aria-label="Ajustar enquadramento">
-        <div><h2>Enquadramento da foto</h2><p>A prévia mostra como a foto aparecerá no perfil.</p>
-          {([
-            ["zoom", "Zoom", 1, 3, 0.05],
-            ["x", "Posição horizontal", 0, 100, 1],
-            ["y", "Posição vertical", 0, 100, 1],
-          ] as const).map(([key,label,min,max,step]) => <label key={key}>{label}<input type="range" min={min} max={max} step={step} value={crop[key]} disabled={photoBusy} onChange={event=>setCrop(current=>({...current,[key]:Number(event.target.value)}))}/></label>)}
-          <button type="button" disabled={photoBusy} onClick={()=>setCrop({zoom:1,x:50,y:50})}>Centralizar e redefinir zoom</button>
-        </div><img src={preview} alt="Prévia circular do enquadramento"/>
-      </section> : null}
+      {source ? <ProfilePhotoEditor source={source} crop={crop} onChange={setCrop} busy={photoBusy} onSave={()=>void savePhoto(preview || "")} onCancel={()=>{setSource(null);setPreview(null);setPhotoError("");}}/> : null}
       <dialog ref={viewer} className="profile-photo-viewer" aria-label="Foto de perfil ampliada" onClick={event=>{if(event.target===event.currentTarget)viewer.current?.close();}}>
         <form method="dialog"><button aria-label="Fechar foto">Fechar ×</button></form>
-        {preview || user.foto ? <img src={preview || user.foto || ""} alt={`Foto de ${user.nome}, sem máscara circular`}/> : null}
+        {viewerLoading ? <p role="status">Carregando foto completa…</p> : null}
+        {viewerPhoto ? <img src={viewerPhoto} alt={`Foto completa de ${user.nome}`}/> : null}
       </dialog>
       <div className="profile-layout">
         <section className="profile-card">
