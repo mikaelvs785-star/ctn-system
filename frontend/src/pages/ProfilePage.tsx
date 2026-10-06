@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { changePassword } from "../api/profile";
+import { prepareProfilePhoto } from "../utils/profile-photo";
+import { changePassword, saveProfilePhoto } from "../api/profile";
 import { useAuth } from "../auth/auth-context";
 import {
   getThemePreference,
@@ -17,7 +18,11 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, token, clearSession } = useAuth();
+  const { user, token, clearSession, updatePhoto } = useAuth();
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [photoNotice, setPhotoNotice] = useState("");
+  const [preview, setPreview] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,6 +58,13 @@ export default function ProfilePage() {
       setSubmitting(false);
     }
   }
+  async function savePhoto(foto: string) {
+    if (!token || photoBusy) return;
+    setPhotoBusy(true); setPhotoError(""); setPhotoNotice("");
+    try { const result = await saveProfilePhoto(token, foto); updatePhoto(result.foto); setPreview(null); setPhotoNotice(foto ? "Foto atualizada." : "Foto removida."); }
+    catch(e) { setPhotoError(e instanceof Error ? e.message : "Não foi possível salvar a foto."); }
+    finally { setPhotoBusy(false); }
+  }
   if (!user) return null;
   const fields = [
     {
@@ -85,7 +97,7 @@ export default function ProfilePage() {
       </header>
       <section className="profile-identity">
         <div className="profile-avatar">
-          {user.nome
+          {preview || user.foto ? <img src={preview || user.foto || ""} alt="Foto do seu perfil" /> : user.nome
             .trim()
             .split(/\s+/)
             .slice(0, 2)
@@ -98,6 +110,20 @@ export default function ProfilePage() {
           <span>{roleLabels[user.role] ?? user.role}</span>
           <p className="profile-active">Conta ativa</p>
         </div>
+      </section>
+      <section className="profile-photo-controls" aria-label="Foto de perfil">
+        <label> {user.foto ? "Trocar foto" : "Adicionar foto"}
+          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={photoBusy} onChange={async event => {
+            const file=event.target.files?.[0]; event.target.value=""; if(!file) return;
+            setPhotoError(""); setPhotoNotice(""); setPhotoBusy(true);
+            try { setPreview(await prepareProfilePhoto(file)); } catch(e) { setPhotoError(e instanceof Error ? e.message : "Foto inválida."); } finally { setPhotoBusy(false); }
+          }} />
+        </label>
+        {preview ? <><button type="button" disabled={photoBusy} onClick={()=>void savePhoto(preview)}>Salvar foto</button><button type="button" disabled={photoBusy} onClick={()=>setPreview(null)}>Cancelar</button></> : user.foto ? <button type="button" disabled={photoBusy} onClick={()=>void savePhoto("")}>Remover foto</button> : null}
+        <small>JPEG, PNG ou WebP, até 8 MB. Recorte quadrado central, com prévia antes de salvar.</small>
+        {photoBusy ? <p role="status">Processando foto...</p> : null}
+        {photoError ? <p role="alert">{photoError}</p> : null}
+        {photoNotice ? <p role="status">{photoNotice}</p> : null}
       </section>
       <div className="profile-layout">
         <section className="profile-card">

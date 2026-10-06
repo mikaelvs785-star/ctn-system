@@ -7,6 +7,7 @@ interface AuthContextValue {
   token: string | null
   login: (identifier: string, password: string) => Promise<AuthUser>
   logout: () => Promise<void>
+  updatePhoto: (foto: string | null) => void
   clearSession: () => void
 }
 
