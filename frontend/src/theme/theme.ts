@@ -1,37 +1,47 @@
-export type Theme = 'light' | 'dark'
-
-const THEME_STORAGE_KEY = 'cemtn:theme'
-const DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
-
-function readSavedTheme(): Theme | null {
+export type Theme = "light" | "dark";
+export type ThemePreference = Theme | "system";
+const KEY = "cemtn:theme";
+const media = () => window.matchMedia("(prefers-color-scheme: dark)");
+export function getThemePreference(): ThemePreference {
   try {
-    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
-    return savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : null
+    const saved = localStorage.getItem(KEY);
+    return saved === "light" || saved === "dark" ? saved : "system";
   } catch {
-    return null
+    return "system";
   }
 }
-
 export function getPreferredTheme(): Theme {
-  const savedTheme = readSavedTheme()
-  if (savedTheme) return savedTheme
-  return window.matchMedia(DARK_MEDIA_QUERY).matches ? 'dark' : 'light'
+  const preference = getThemePreference();
+  return preference === "system"
+    ? media().matches
+      ? "dark"
+      : "light"
+    : preference;
 }
-
 export function applyTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme
-  document.documentElement.style.colorScheme = theme
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+  window.dispatchEvent(new Event("cemtn-theme-change"));
 }
-
 export function initializeTheme() {
-  applyTheme(getPreferredTheme())
+  applyTheme(getPreferredTheme());
+  media().addEventListener("change", () => {
+    if (getThemePreference() === "system") applyTheme(getPreferredTheme());
+  });
+  window.addEventListener("storage", (event) => {
+    if (event.key === KEY) applyTheme(getPreferredTheme());
+  });
 }
-
-export function saveTheme(theme: Theme) {
+export function saveThemePreference(preference: ThemePreference) {
   try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    localStorage.setItem(KEY, preference);
   } catch {
-    // O tema continua válido para a sessão mesmo sem armazenamento disponível.
+    /* Session preference still applies. */
   }
-  applyTheme(theme)
+  applyTheme(
+    preference === "system" ? (media().matches ? "dark" : "light") : preference,
+  );
+}
+export function saveTheme(theme: Theme) {
+  saveThemePreference(theme);
 }
