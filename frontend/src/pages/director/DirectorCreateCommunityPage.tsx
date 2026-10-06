@@ -1,3 +1,4 @@
+import CommunityCoverEditor from '../../components/CommunityCoverEditor'
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createCommunity } from '../../api/communities'
@@ -21,6 +22,8 @@ export default function DirectorCreateCommunityPage() {
   const [nome, setNome] = useState('')
   const [descricao, setDescricao] = useState('')
   const [regras, setRegras] = useState('')
+  const [capa, setCapa] = useState('')
+  const [coverBusy, setCoverBusy] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -31,10 +34,10 @@ export default function DirectorCreateCommunityPage() {
     setErrorMessage('')
     if (nome.trim().length < 2) return setErrorMessage('Informe o nome da comunidade')
     if (descricao.trim().length < 10) return setErrorMessage('Descreva a finalidade da comunidade com pelo menos 10 caracteres')
-    if (!token || submitting) return
+    if (!token || submitting || coverBusy) return
     setSubmitting(true)
     try {
-      await createCommunity({ nome: nome.trim(), descricao: descricao.trim(), regras: regras.trim() }, token)
+      await createCommunity({ nome: nome.trim(), descricao: descricao.trim(), regras: regras.trim(), capa: capa }, token)
       navigate(`${base}/comunidades`, { replace: true, state: { communityCreated: true } })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Não foi possível criar a comunidade'
@@ -56,6 +59,7 @@ export default function DirectorCreateCommunityPage() {
             <label>Descrição <b>*</b><textarea value={descricao} onChange={(event) => setDescricao(event.target.value)} maxLength={2000} placeholder="Explique o objetivo e os assuntos desta comunidade..." required /><small>{descricao.length}/2000 caracteres</small></label>
           </section>
 
+          <CommunityCoverEditor value={capa} onChange={setCapa} onBusyChange={setCoverBusy} />
           <section>
             <h2>Regras de convivência</h2>
             <p>Escreva uma regra por linha. Elas serão exibidas para todos os participantes.</p>
@@ -64,7 +68,7 @@ export default function DirectorCreateCommunityPage() {
         </div>
 
         <aside className="create-community-preview">
-          <h2>Prévia da comunidade</h2>
+          <h2>Prévia da comunidade</h2>{capa ? <img className="community-cover-preview" src={capa} alt="Prévia da capa" /> : null}
           <div className="create-community-preview__heading"><span><Icon name="community" /></span><div><strong>{nome.trim() || 'Nome da comunidade'}</strong><small>Por {user?.nome || 'Direção CEMTN'}</small></div></div>
           <p>{descricao.trim() || 'A descrição aparecerá aqui para ajudar os usuários a entenderem o objetivo deste espaço.'}</p>
           <div className="create-community-preview__status"><i /> Ativa após a criação</div>
@@ -74,7 +78,7 @@ export default function DirectorCreateCommunityPage() {
         </aside>
 
         {errorMessage ? <p className="create-community-error" role="alert">{errorMessage}</p> : null}
-        <footer><Link to={`${base}/comunidades`}>Cancelar</Link><button type="submit" disabled={submitting}>{submitting ? 'Criando...' : 'Criar comunidade'}</button></footer>
+        <footer><Link to={`${base}/comunidades`}>Cancelar</Link><button type="submit" disabled={submitting || coverBusy}>{submitting ? 'Criando...' : 'Criar comunidade'}</button></footer>
       </form>
     </main>
   )
