@@ -35,7 +35,6 @@ export default function DirectorCreateUserPage() {
   const { token, clearSession } = useAuth()
   const navigate = useNavigate()
   const [nome, setNome] = useState('')
-  const [email, setEmail] = useState('')
   const [cpf, setCpf] = useState('')
   const [senha, setSenha] = useState('')
   const [confirmacao, setConfirmacao] = useState('')
@@ -57,7 +56,7 @@ export default function DirectorCreateUserPage() {
 
     setSubmitting(true)
     try {
-      const created = await createUser({ nome: nome.trim(), email: email.trim(), cpf: normalizeCpf(cpf), senha, role }, token)
+      const created = await createUser({ nome: nome.trim(), cpf: normalizeCpf(cpf), senha, role }, token)
       navigate('/diretor/usuarios', { replace: true, state: { createdUserId: created.id } })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Não foi possível cadastrar o usuário'
@@ -83,7 +82,6 @@ export default function DirectorCreateUserPage() {
           <section>
             <h2>Dados de acesso</h2>
             <label>CPF <b>*</b><input type="text" value={cpf} onChange={(event) => setCpf(formatCpf(event.target.value))} inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" required /></label>
-            <label>E-mail institucional <b>*</b><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" maxLength={254} placeholder="nome@cemtn.edu.br" required /></label>
             <div className="create-password-row">
               <label>Senha provisória <b>*</b><span><input type={showPassword ? 'text' : 'password'} value={senha} onChange={(event) => setSenha(event.target.value)} autoComplete="new-password" minLength={12} maxLength={128} placeholder="Mínimo de 12 caracteres" required /><button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}><Icon name={showPassword ? 'eyeOff' : 'eye'} /></button></span></label>
               <label>Confirmar senha <b>*</b><input type={showPassword ? 'text' : 'password'} value={confirmacao} onChange={(event) => setConfirmacao(event.target.value)} autoComplete="new-password" minLength={12} maxLength={128} placeholder="Repita a senha" required /></label>
