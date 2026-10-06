@@ -63,3 +63,11 @@
  .news-detail > article > .news-detail__content { grid-row:3; margin-top:24px; padding:24px 0; }
  .news-detail > article > footer { grid-row:4; }
 }
+
+/* Preserve uploaded covers instead of forcing a tall crop. */
+.news-detail > article { max-width:1200px; margin:0 auto; }
+.news-detail > article > .news-detail__art { aspect-ratio:auto; max-height:420px; background:transparent; }
+.news-detail > article > .news-detail__art img { width:100%; height:auto; max-height:420px; object-fit:contain; }
+@media (max-width:1050px) {
+ .news-detail > article > .news-detail__art { aspect-ratio:auto; }
+}
