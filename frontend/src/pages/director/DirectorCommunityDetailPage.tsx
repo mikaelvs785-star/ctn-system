@@ -1,3 +1,4 @@
+import CommunityCoverEditor from '../../components/CommunityCoverEditor'
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
@@ -41,6 +42,8 @@ export default function DirectorCommunityDetailPage() {
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [editRules, setEditRules] = useState('')
+  const [editCover, setEditCover] = useState('')
+  const [coverBusy, setCoverBusy] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -57,7 +60,7 @@ export default function DirectorCommunityDetailPage() {
       ])
       const commentEntries = await Promise.all(postData.map(async (post) => [post.id, await listPostComments(id, post.id, token, signal)] as const))
       setCommunity(communityData); setMembers(memberData); setPosts(postData); setComments(Object.fromEntries(commentEntries))
-      setEditName(communityData.nome); setEditDescription(communityData.descricao); setEditRules(communityData.regras || '')
+      setEditName(communityData.nome); setEditDescription(communityData.descricao); setEditRules(communityData.regras || ''); setEditCover(communityData.capa || '')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       const message = error instanceof Error ? error.message : 'Não foi possível carregar a comunidade'
@@ -69,10 +72,10 @@ export default function DirectorCommunityDetailPage() {
 
   async function saveCommunity(event: FormEvent) {
     event.preventDefault()
-    if (!token || !community || busy) return
+    if (!token || !community || busy || coverBusy) return
     setBusy('edit'); setErrorMessage('')
     try {
-      const updated = await updateCommunity(id, { nome: editName.trim(), descricao: editDescription.trim(), regras: editRules.trim() }, token)
+      const updated = await updateCommunity(id, { nome: editName.trim(), descricao: editDescription.trim(), regras: editRules.trim(), capa: editCover }, token)
       setCommunity({ ...community, ...updated, creatorName: community.creatorName })
       setEditing(false); setNotice('Informações da comunidade atualizadas.')
     } catch (error) { setErrorMessage(error instanceof Error ? error.message : 'Não foi possível atualizar') }
@@ -129,6 +132,7 @@ export default function DirectorCommunityDetailPage() {
   return (
     <main className="director-community-detail">
       <nav><Link to={`${base}/comunidades`}>Comunidades</Link><span>/</span><span>{community.nome}</span></nav>
+      {community.capa ? <img className="community-detail-cover" src={community.capa} alt="" /> : null}
       <header>
         <span><Icon name="community" /></span>
         <div><h1>{community.nome}</h1><p>{community.descricao}</p><small>Por {community.creatorName} · {members.length} participantes · {posts.length} publicações</small></div>
@@ -158,7 +162,7 @@ export default function DirectorCommunityDetailPage() {
         </aside>
       </div>
 
-      {editing ? <div className="director-detail-modal" role="dialog" aria-modal="true" aria-labelledby="edit-community-title"><form onSubmit={saveCommunity}><header><h2 id="edit-community-title">Editar comunidade</h2><button type="button" onClick={() => setEditing(false)} aria-label="Fechar"><Icon name="close" /></button></header><label>Nome<input value={editName} onChange={(event) => setEditName(event.target.value)} maxLength={120} required /></label><label>Descrição<textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={2000} required /></label><label>Regras<textarea value={editRules} onChange={(event) => setEditRules(event.target.value)} maxLength={5000} /></label><footer><button type="button" onClick={() => setEditing(false)}>Cancelar</button><button type="submit" disabled={busy === 'edit'}><Icon name="check" /> {busy === 'edit' ? 'Salvando...' : 'Salvar alterações'}</button></footer></form></div> : null}
+      {editing ? <div className="director-detail-modal" role="dialog" aria-modal="true" aria-labelledby="edit-community-title"><form onSubmit={saveCommunity}><header><h2 id="edit-community-title">Editar comunidade</h2><button type="button" onClick={() => { setEditing(false); setCoverBusy(false); setEditCover(community.capa || '') }} aria-label="Fechar"><Icon name="close" /></button></header><label>Nome<input value={editName} onChange={(event) => setEditName(event.target.value)} maxLength={120} required /></label><label>Descrição<textarea value={editDescription} onChange={(event) => setEditDescription(event.target.value)} maxLength={2000} required /></label><label>Regras<textarea value={editRules} onChange={(event) => setEditRules(event.target.value)} maxLength={5000} /></label><CommunityCoverEditor value={editCover} onChange={setEditCover} onBusyChange={setCoverBusy} /><footer><button type="button" onClick={() => { setEditing(false); setCoverBusy(false); setEditCover(community.capa || '') }}>Cancelar</button><button type="submit" disabled={busy === 'edit' || coverBusy}><Icon name="check" /> {busy === 'edit' ? 'Salvando...' : 'Salvar alterações'}</button></footer></form></div> : null}
     </main>
   )
 }
