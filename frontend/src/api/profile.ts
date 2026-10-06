@@ -34,3 +34,9 @@ export async function resetPassword(token: string, novaSenha: string) {
     throw new Error(message || 'Não foi possível redefinir a senha')
   }
 }
+
+export async function saveProfilePhoto(token: string, foto: string) {
+ const response = await fetch(`${API_URL}/auth/photo`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ foto }) })
+ if (!response.ok) throw new Error(response.status === 401 ? 'Sua sessão expirou' : 'Não foi possível salvar a foto. Tente novamente.')
+ return response.json() as Promise<{ foto: string | null }>
+}
