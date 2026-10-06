@@ -22,6 +22,7 @@ model User {
   email     String?  @unique
   cpf       String?  @unique
   foto      String?
+  fotoOriginal String?
   senhaHash String
   ativo     Boolean  @default(true)
   statusCadastro String @default("ATIVO")
