@@ -1,3 +1,4 @@
+import CommunityCoverEditor from '../../components/CommunityCoverEditor'
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getCommunity, updateCommunity, type CommunitySummary } from '../../api/communities'
@@ -25,6 +26,8 @@ export default function TeacherEditCommunityPage() {
   const [descricao, setDescricao] = useState('')
   const [regras, setRegras] = useState('')
   const [loading, setLoading] = useState(true)
+  const [capa, setCapa] = useState('')
+  const [coverBusy, setCoverBusy] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -40,7 +43,7 @@ export default function TeacherEditCommunityPage() {
       setCommunity(data)
       setNome(data.nome)
       setDescricao(data.descricao)
-      setRegras(data.regras || '')
+      setRegras(data.regras || ''); setCapa(data.capa || '')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       const message = error instanceof Error ? error.message : 'Não foi possível carregar a comunidade'
@@ -65,7 +68,7 @@ export default function TeacherEditCommunityPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setErrorMessage('')
-    if (!token || !community || submitting || community.creatorId !== user?.id) return
+    if (!token || !community || submitting || coverBusy || community.creatorId !== user?.id) return
     if (nome.trim().length < 2) {
       setErrorMessage('Informe o nome da comunidade')
       return
@@ -80,7 +83,7 @@ export default function TeacherEditCommunityPage() {
       await updateCommunity(id, {
         nome: nome.trim(),
         descricao: descricao.trim(),
-        regras: regras.trim(),
+        regras: regras.trim(), capa: capa,
       }, token)
       navigate(`/professor/comunidades/${id}`, {
         replace: true,
@@ -136,6 +139,7 @@ export default function TeacherEditCommunityPage() {
               <small>{descricao.length}/2000 caracteres</small>
             </label>
           </section>
+          <CommunityCoverEditor value={capa} onChange={setCapa} onBusyChange={setCoverBusy} />
           <section>
             <h2>Regras de convivência</h2>
             <p>Escreva uma regra por linha. Elas serão exibidas para todos os participantes.</p>
@@ -147,7 +151,7 @@ export default function TeacherEditCommunityPage() {
         </div>
 
         <aside className="teacher-edit-preview">
-          <h2>Prévia da comunidade</h2>
+          <h2>Prévia da comunidade</h2>{capa ? <img className="community-cover-preview" src={capa} alt="Prévia da capa" /> : null}
           <div className="teacher-edit-preview__heading"><span><Icon name="community" /></span><div><strong>{nome.trim() || 'Nome da comunidade'}</strong><small>Por {community.creatorName}</small></div></div>
           <p>{descricao.trim() || 'A descrição da comunidade aparecerá aqui.'}</p>
           <div className="teacher-edit-preview__status"><i /> Comunidade ativa</div>
@@ -159,7 +163,7 @@ export default function TeacherEditCommunityPage() {
         {errorMessage ? <p className="teacher-edit-error" role="alert">{errorMessage}</p> : null}
         <footer>
           <Link to={`/professor/comunidades/${id}`}>Cancelar</Link>
-          <button type="submit" disabled={submitting}>{submitting ? 'Salvando...' : 'Salvar alterações'}</button>
+          <button type="submit" disabled={submitting || coverBusy}>{submitting ? 'Salvando...' : 'Salvar alterações'}</button>
         </footer>
       </form>
     </main>

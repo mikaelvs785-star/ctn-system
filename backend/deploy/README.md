@@ -12,3 +12,7 @@ Configure `DATABASE_URL` using the project's **Connect > Session pooler** connec
 The backend must return `{ "status": "ok", "database": "up" }` from `/health` before considering the deployment complete. Verify protected endpoints reject unauthenticated requests and student registration remains pending director approval.
 
 Create the first director using `npm run admin:create` from the backend with the database environment configured. Use the actual intended director's CPF; do not seed a publicly known admin password. No school accounts or existing local data have been migrated by the bootstrap.
+
+## Remodelação visual e capas de comunidades
+
+Antes de publicar o backend desta versão, execute `npm run db:migrate:community-covers` no diretório backend, com a DATABASE_URL do ambiente configurada. A migração adiciona apenas a coluna opcional `community.capa`, pode ser repetida e preserva os dados. Publique o backend antes do frontend para disponibilizar a gravação das capas. Não publique imagens ou dados demonstrativos das propostas visuais no banco de produção.

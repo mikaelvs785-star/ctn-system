@@ -148,6 +148,7 @@ export default function StudentCommunityDetailPage() {
     <main className="community-detail">
       <nav aria-label="Navegação estrutural"><Link to="/aluno/comunidades">Comunidades</Link><span>›</span><span>{community.nome}</span></nav>
 
+      {community.capa ? <img className="community-detail-cover" src={community.capa} alt="" /> : null}
       <header className="community-detail__header">
         <div className="community-detail__symbol" aria-hidden="true">Σ</div>
         <div>

@@ -73,8 +73,8 @@ export class CommunitiesService {
       const {
         rows: [community],
       } = await c.query(
-        'INSERT INTO public.community (nome, descricao, regras, "creatorId", "updatedAt") VALUES ($1,$2,$3,$4,now()) RETURNING *',
-        [dto.nome, dto.descricao, dto.regras, user.id],
+        'INSERT INTO public.community (nome, descricao, regras, "creatorId", capa, "updatedAt") VALUES ($1,$2,$3,$4,$5,now()) RETURNING *',
+        [dto.nome, dto.descricao, dto.regras, user.id, dto.capa || null],
       );
       await c.query(
         'INSERT INTO public.membership ("communityId","userId") VALUES ($1,$2)',
@@ -88,8 +88,8 @@ export class CommunitiesService {
       await this.access(c, id, user, true);
       return (
         await c.query(
-          'UPDATE public.community SET nome=COALESCE($1,nome), descricao=COALESCE($2,descricao), regras=COALESCE($3,regras), "updatedAt"=now() WHERE id=$4 RETURNING *',
-          [dto.nome, dto.descricao, dto.regras, id],
+          `UPDATE public.community SET nome=COALESCE($1,nome), descricao=COALESCE($2,descricao), regras=COALESCE($3,regras), capa=CASE WHEN $4::text IS NULL THEN capa ELSE NULLIF($4,'') END, "updatedAt"=now() WHERE id=$5 RETURNING *`,
+          [dto.nome, dto.descricao, dto.regras, dto.capa, id],
         )
       ).rows[0];
     });

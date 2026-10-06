@@ -1,6 +1,18 @@
-﻿import { IsNotEmpty, IsString, MaxLength, ValidateIf } from 'class-validator';
+﻿import {
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  Matches,
+  ValidateIf,
+} from 'class-validator';
 import { Trim } from '../../common/api.js';
 export class CreateCommunityDto {
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString()
+  @MaxLength(1500000)
+  @Matches(/^(?:|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2})$/)
+  capa?: string;
+
   @IsString() @Trim() @IsNotEmpty() @MaxLength(120) nome: string;
   @IsString() @Trim() @IsNotEmpty() @MaxLength(2000) descricao: string;
   @ValidateIf((_o, v) => v !== undefined)
@@ -10,6 +22,12 @@ export class CreateCommunityDto {
   regras = '';
 }
 export class UpdateCommunityDto {
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString()
+  @MaxLength(1500000)
+  @Matches(/^(?:|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2})$/)
+  capa?: string;
+
   @ValidateIf((_o, v) => v !== undefined)
   @IsString()
   @Trim()

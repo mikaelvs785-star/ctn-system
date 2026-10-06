@@ -75,6 +75,7 @@ model News {
 }
 
 model Community {
+  capa String?
   id Int @id @default(autoincrement())
   nome String
   descricao String

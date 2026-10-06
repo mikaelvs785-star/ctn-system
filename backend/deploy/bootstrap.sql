@@ -191,4 +191,6 @@ ALTER TABLE public."user" ADD CONSTRAINT user_status_cadastro_check CHECK ("stat
 
 INSERT INTO public.role (name, "updatedAt") VALUES ('ALUNO',now()),('PROFESSOR',now()),('SOE',now()),('COORDENACAO',now()),('DIRECAO',now());
 
+ALTER TABLE public.community ADD COLUMN IF NOT EXISTS capa text;
+
 COMMIT;

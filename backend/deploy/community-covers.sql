@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE public.community ADD COLUMN IF NOT EXISTS capa text;
+COMMIT;

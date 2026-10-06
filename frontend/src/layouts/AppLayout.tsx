@@ -94,15 +94,15 @@ export default function AppLayout() {
     <div className="app-layout">
       <aside className={menuOpen ? 'app-sidebar app-sidebar--open' : 'app-sidebar'}>
         <div className="app-sidebar__header">
-          <div className="app-brand">CEMTN<span /></div>
-          <div className="app-brand-name"><strong>CEMTN</strong><small>CEMTN</small></div>
+          <div className="app-brand">CEMTN</div>
+          <div className="app-brand-name"><small>Área {user.role === 'ALUNO' ? 'do aluno' : user.role === 'PROFESSOR' ? 'do professor' : 'da direção'}</small></div>
           <button className="app-icon-button app-sidebar__close" type="button" onClick={() => setMenuOpen(false)} aria-label="Fechar menu">
             <Icon name="close" />
           </button>
         </div>
 
         <nav className="app-navigation" aria-label="Navegação principal">
-          <p>MENU PRINCIPAL</p>
+
           {navigation.map((item) => (
             <NavLink
               key={item.path}
@@ -139,7 +139,7 @@ export default function AppLayout() {
           <button className="app-icon-button app-menu-button" type="button" onClick={() => setMenuOpen(true)} aria-label="Abrir menu">
             <Icon name="menu" />
           </button>
-          <div className="app-topbar__title"><small>CEMTN</small><strong>{currentTitle}</strong></div>
+          <div className="app-topbar__title"><small>{roleLabels[user.role]}</small><span aria-hidden="true"> / </span><strong>{currentTitle}</strong></div>
           <div className="app-topbar__actions">
             <ThemeToggle />
             <button className="app-icon-button app-notification" type="button" aria-label="Notificações">

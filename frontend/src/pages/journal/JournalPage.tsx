@@ -29,12 +29,6 @@ const categoryLabels: Record<string, string> = {
   EDUCACAO: 'Educação',
 }
 
-const sectionCategories = [
-  { title: 'Esportes', categories: ['ESPORTES'] },
-  { title: 'Ciências e Tecnologia', categories: ['CIENCIAS', 'PROJETO'] },
-  { title: 'Cultura e Educação', categories: ['CULTURA', 'EDUCACAO', 'ATIVIDADE', 'EVENTO'] },
-]
-
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, ReactNode> = {
     arrow: <path d="m9 18 6-6-6-6" />,
@@ -58,7 +52,7 @@ function excerpt(content: string, size = 120) {
 }
 
 function ArticleArt({ variant = 0, cover }: { variant?: number; cover?: string | null }) {
-  return <div className={`journal-art journal-art--${variant % 4}`}>{cover ? <img src={cover} alt="" /> : <><i /><b /></>}</div>
+  return <div className={`journal-art journal-art--${variant % 4}`}>{cover ? <img src={cover} alt="" /> : <span className="cover-fallback">CEMTN · Jornal</span>}</div>
 }
 
 function NewsLink({ item, className }: { item: NewsItem; className?: string }) {
@@ -109,7 +103,7 @@ export default function JournalPage() {
 
   const featured = filteredNews.slice(0, 3)
   const currentFeature = featured[activeSlide % Math.max(featured.length, 1)]
-  const latest = news.filter((item) => item.id !== currentFeature?.id).slice(0, 3)
+  const latest = filteredNews.filter((item) => item.id !== currentFeature?.id).slice(0, 12)
 
   function selectFilter(filter: string) {
     setSelectedFilter(filter)
@@ -140,7 +134,7 @@ export default function JournalPage() {
       <header className="journal-heading">
         <div>
           <h1>Jornal CEMTN</h1>
-          <p>Informação, conhecimento e tudo o que acontece na nossa escola.</p>
+          <p>Notícias e histórias da nossa escola.</p>
         </div>
         {canPublish ? <Link className="journal-create" to={`${base}/jornal/nova`}>+ Nova publicação</Link> : null}
       </header>
@@ -173,8 +167,8 @@ export default function JournalPage() {
               </div>
             </article>
 
-            <aside className="journal-latest">
-              <div className="journal-block-title"><h2>Últimas notícias</h2><span>Ver todas <Icon name="arrow" /></span></div>
+            <section className="journal-latest">
+              <div className="journal-block-title"><h2>Últimas notícias</h2></div>
               {latest.map((item, index) => (
                 <article key={item.id}>
                   <ArticleArt variant={index + 1} cover={item.capa} />
@@ -182,30 +176,14 @@ export default function JournalPage() {
                   <NewsLink item={item} className="journal-card-link" />
                 </article>
               ))}
-            </aside>
+            </section>
           </section>
 
-          <section className="journal-sections">
-            {sectionCategories.map((section) => {
-              const items = news.filter((item) => section.categories.includes(item.categoria)).slice(0, 3)
-              return (
-                <div className="journal-section" key={section.title}>
-                  <div className="journal-block-title"><h2>{section.title}</h2><span>Ver todas <Icon name="arrow" /></span></div>
-                  {items.length ? items.map((item, index) => (
-                    <article className={index === 0 ? 'journal-section__main' : ''} key={item.id}>
-                      {index === 0 ? <ArticleArt variant={section.title.length} cover={item.capa} /> : null}
-                      <div><span>{categoryLabels[item.categoria] ?? item.categoria}</span><time>{formatDate(item.createdAt)}</time><h3>{item.titulo}</h3>{index === 0 ? <p>{excerpt(item.conteudo, 90)}</p> : null}</div>
-                      <NewsLink item={item} className="journal-card-link" />
-                    </article>
-                  )) : <p className="journal-empty-section">Nenhuma publicação nesta editoria.</p>}
-                </div>
-              )
-            })}
-          </section>
+
         </>
       ) : (
         <section className="journal-empty">
-          <div className="journal-empty__art"><ArticleArt /></div>
+
           <h2>Nenhuma publicação encontrada</h2>
           <p>{selectedFilter === 'ALL' ? 'O Jornal ainda não possui publicações.' : 'Não há notícias nesta editoria.'}</p>
           {canPublish ? <Link className="journal-create" to={`${base}/jornal/nova`}>Criar primeira publicação</Link> : null}
