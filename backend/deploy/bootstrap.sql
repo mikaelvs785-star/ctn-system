@@ -194,3 +194,5 @@ INSERT INTO public.role (name, "updatedAt") VALUES ('ALUNO',now()),('PROFESSOR',
 ALTER TABLE public.community ADD COLUMN IF NOT EXISTS capa text;
 
 COMMIT;
+
+ALTER TABLE public."user" ADD COLUMN IF NOT EXISTS foto text;
