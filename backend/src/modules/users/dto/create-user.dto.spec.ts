@@ -17,6 +17,11 @@ describe('CreateUserDto', () => {
     );
   });
 
+  it('accepts registration without email', async () => {
+    const { email, ...withoutEmail } = valid;
+    expect(await validate(plainToInstance(CreateUserDto, withoutEmail))).toHaveLength(0);
+  });
+
   it.each([undefined, '', 'curta', 'a'.repeat(129)])(
     'rejects an invalid password',
     async (senha) => {
