@@ -9,3 +9,8 @@
 .users-actions--status>a,.users-actions--status>button{width:auto!important;height:auto!important;border:1px solid var(--border,#dbe3ef)!important;border-radius:9px!important;padding:7px 9px!important;background:transparent!important;color:inherit!important;font-size:.76rem!important;text-decoration:none;font-weight:700}
 .users-actions--status .approve-user{background:#166534!important;border-color:#166534!important;color:#fff!important}
 .users-actions--status .reject-user{color:#b91c1c!important;border-color:#fecaca!important}
+
+.users-list__identity > .managed-user-photo { display:block; overflow:visible; width:44px; height:44px; }
+.managed-user-photo > span,.managed-user-photo > button { display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:50%; background:var(--color-blue-soft); color:var(--color-ink); font:inherit; font-weight:700; padding:0; }
+.managed-user-photo > button { overflow:hidden; cursor:zoom-in; }
+.managed-user-photo > button img { width:100%; height:100%; object-fit:cover; }

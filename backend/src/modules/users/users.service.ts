@@ -12,7 +12,7 @@ import { PageDto, offset } from '../../common/api.js';
 import { isValidCpf, maskCpf, normalizeCpf } from '../../common/cpf.js';
 
 const fields =
-  'u.id, u.nome, u.email, u.ativo, u."statusCadastro", u."roleId", r.name AS role, u."createdAt", u."updatedAt"';
+  '(u.foto IS NOT NULL) AS "hasFoto", u.id, u.nome, u.email, u.ativo, u."statusCadastro", u."roleId", r.name AS role, u."createdAt", u."updatedAt"';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +29,12 @@ export class UsersService {
       [page.limit, offset(page)],
     );
     return result.rows.map((user) => this.present(user));
+  }
+
+  async getPhoto(id: number) {
+    const { rows: [user] } = await this.db.query('SELECT foto, COALESCE("fotoOriginal", foto) AS original FROM public."user" WHERE id = $1', [id]);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+    return { foto: user.foto ?? null, original: user.original ?? null };
   }
 
   async findOne(id: number) {

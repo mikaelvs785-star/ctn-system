@@ -15,3 +15,17 @@ export async function prepareProfilePhoto(file: File | string, zoom = 1, x = 50,
   return foto
  } finally { if(typeof file !== 'string') URL.revokeObjectURL(url) }
 }
+
+export async function prepareOriginalPhoto(file: File | string): Promise<string> {
+ const url=typeof file==='string' ? file : URL.createObjectURL(file);
+ try {
+  const img=new Image();
+  await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error('Não foi possível ler a foto.'));img.src=url;});
+  const scale=Math.min(1,1200/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Não foi possível preparar a foto.');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  for(const quality of [.8,.65,.5,.35]){const original=canvas.toDataURL('image/jpeg',quality);if(original.length<=400000)return original;}
+  throw new Error('A imagem é muito complexa. Escolha uma foto menor.');
+ } finally {if(typeof file!=='string')URL.revokeObjectURL(url);}
+}

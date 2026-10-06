@@ -27,8 +27,13 @@ const identity = (u: {
 export class AuthService {
   constructor(private readonly db: DatabaseService) {}
 
-  async updatePhoto(userId: number, foto: string) {
-    await this.db.query('UPDATE public."user" SET foto = NULLIF($1, $3), "updatedAt" = now() WHERE id = $2', [foto, userId, '']);
+  async getPhoto(userId: number) {
+    const { rows: [user] } = await this.db.query('SELECT COALESCE("fotoOriginal", foto) AS original FROM public."user" WHERE id = $1', [userId]);
+    return { original: user?.original ?? null };
+  }
+
+  async updatePhoto(userId: number, foto: string, original?: string) {
+    await this.db.query('UPDATE public."user" SET foto = NULLIF($1, $3), "fotoOriginal" = NULLIF($4, $3), "updatedAt" = now() WHERE id = $2', [foto, userId, '', foto ? original ?? foto : '']);
     return { foto: foto || null };
   }
 

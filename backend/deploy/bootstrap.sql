@@ -196,3 +196,5 @@ ALTER TABLE public.community ADD COLUMN IF NOT EXISTS capa text;
 COMMIT;
 
 ALTER TABLE public."user" ADD COLUMN IF NOT EXISTS foto text;
+
+ALTER TABLE public."user" ADD COLUMN IF NOT EXISTS "fotoOriginal" text;

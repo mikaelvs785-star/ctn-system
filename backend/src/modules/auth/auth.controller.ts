@@ -84,6 +84,12 @@ export class UpdatePhotoDto {
   @MaxLength(400000)
   @Matches(/^(?:data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2})?$/, { message: 'Envie uma foto JPEG válida' })
   foto: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(400000)
+  @Matches(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/)
+  original?: string;
 }
 
 @Controller('auth')
@@ -114,11 +120,17 @@ export class AuthController {
     return req.user;
   }
 
+  @Get('photo')
+  @Header('Cache-Control', 'no-store')
+  getPhoto(@Req() req: AuthRequest) {
+    return this.auth.getPhoto(req.user!.id);
+  }
+
   @Post('photo')
   @Header('Cache-Control', 'no-store')
   async updatePhoto(@Req() req: AuthRequest, @Body() dto: UpdatePhotoDto) {
     await this.auth.limit('photo:' + req.user.id);
-    return this.auth.updatePhoto(req.user.id, dto.foto);
+    return this.auth.updatePhoto(req.user.id, dto.foto, dto.original);
   }
 
   @Post('logout')
