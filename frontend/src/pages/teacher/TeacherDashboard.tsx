@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { listCommunities, type CommunitySummary } from '../../api/communities'
 import { listNews, type NewsItem } from '../../api/news'
 import { useAuth } from '../../auth/auth-context'
+import '../director/DirectorDashboard.css'
 import './TeacherDashboard.css'
 
 type IconName = 'news' | 'community' | 'people' | 'post' | 'plus' | 'arrow' | 'refresh'
@@ -59,33 +60,33 @@ export default function TeacherDashboard() {
   if (errorMessage) return <main className="teacher-feedback"><h1>Não foi possível abrir o painel</h1><p>{errorMessage}</p><button type="button" onClick={() => void load()}><Icon name="refresh" /> Tentar novamente</button></main>
 
   return (
-    <main className="teacher-dashboard">
-      <header><h1>Painel do Professor</h1><p>Acompanhe suas publicações e comunidades no CEMTN.</p></header>
-      <section className="teacher-welcome"><h2>Olá, Prof. {user?.nome.split(' ')[0]}.</h2><span>Professor</span><p>Aqui estão as atividades mais recentes dos seus espaços.</p></section>
+    <main className="director-dashboard teacher-dashboard">
+      <header className="director-page-title"><div><h1>Visão geral</h1><p>Olá, {user?.nome.split(' ')[0]}. Acompanhe suas publicações e comunidades.</p></div><Link to="/professor/jornal/nova" className="teacher-primary-action">+ Nova publicação</Link></header>
 
-      <section className="teacher-stats">
-        <Link to="/professor/comunidades"><span><Icon name="community" /></span><div><small>Comunidades criadas</small><strong>{ownCommunities.length.toString().padStart(2, '0')}</strong></div><Icon name="arrow" /></Link>
-        <Link to="/professor/jornal"><span><Icon name="news" /></span><div><small>Publicações no Jornal</small><strong>{ownNews.length.toString().padStart(2, '0')}</strong></div><Icon name="arrow" /></Link>
-        <article><span><Icon name="post" /></span><div><small>Interações registradas</small><strong>{interactions.toString().padStart(2, '0')}</strong></div></article>
+      <section className="director-stats teacher-stats">
+        <Link to="/professor/comunidades"><div><small>Comunidades criadas</small><strong>{ownCommunities.length}</strong></div></Link>
+        <Link to="/professor/jornal"><div><small>Publicações no Jornal</small><strong>{ownNews.length}</strong></div></Link>
+        <article><div><small>Interações registradas</small><strong>{interactions}</strong></div></article>
       </section>
 
-      <div className="teacher-dashboard-grid">
-        <section className="teacher-card teacher-activity">
-          <div className="teacher-card-title"><h2>Atividade recente</h2></div>
-          {activities.length ? activities.map((item) => <Link to={item.path} key={item.id}><i /><span><Icon name={item.icon} /></span><div><strong>{item.title}</strong><p>{item.description}</p></div><time dateTime={item.date}>{formatDate(item.date)}</time></Link>) : <p className="teacher-empty">Você ainda não possui atividades recentes.</p>}
+      <div className="director-main-grid">
+        <section className="director-card director-activity">
+          <div className="director-card-title"><h2>Minhas comunidades</h2><Link to="/professor/comunidades">Ver todas <Icon name="arrow" /></Link></div>
+          {ownCommunities.slice(0,3).map(item=><article key={item.id}><div><strong>{item.nome}</strong><p>{item.memberCount} participantes · {item.postCount} publicações</p></div><Link to={`/professor/comunidades/${item.id}`}>Abrir →</Link></article>)}
+          {!ownCommunities.length ? <p className="director-empty">Nenhuma comunidade criada. Use a ação rápida para começar.</p> : null}
         </section>
-
-        <section className="teacher-card teacher-actions">
-          <div className="teacher-card-title"><h2>Ações rápidas</h2></div>
+        <section className="director-card director-actions">
+          <div className="director-card-title"><h2>Ações rápidas</h2></div>
           <Link to="/professor/jornal/nova"><span><Icon name="news" /></span><strong>Nova publicação</strong><Icon name="arrow" /></Link>
           <Link to="/professor/comunidades/nova"><span><Icon name="community" /></span><strong>Criar comunidade</strong><Icon name="arrow" /></Link>
           <Link to="/professor/comunidades"><span><Icon name="people" /></span><strong>Ver comunidades</strong><Icon name="arrow" /></Link>
         </section>
       </div>
 
-      <section className="teacher-card teacher-communities">
-        <div className="teacher-card-title"><h2>Minhas comunidades</h2><Link to="/professor/comunidades">Ver todas <Icon name="arrow" /></Link></div>
-        <div>{ownCommunities.slice(0, 3).map((item) => <article key={item.id}><span><Icon name="community" /></span><div><h3>{item.nome}</h3><p>{item.descricao}</p><small>{item.memberCount} participantes · {item.postCount} publicações</small></div><Link to={`/professor/comunidades/${item.id}`}><Icon name="arrow" /></Link></article>)}{!ownCommunities.length ? <p className="teacher-empty">Nenhuma comunidade criada. Use a ação rápida para começar.</p> : null}</div>
+      <section className="director-card director-activity recent-activity">
+        <div className="director-card-title"><h2>Atividade recente</h2></div>
+        {activities.map(item=><article key={item.id}><div><Link to={item.path}><strong>{item.title}</strong></Link><p>{item.description}</p></div><time dateTime={item.date}>{formatDate(item.date)}</time></article>)}
+        {!activities.length ? <p className="director-empty">Você ainda não possui atividades recentes.</p> : null}
       </section>
     </main>
   )
