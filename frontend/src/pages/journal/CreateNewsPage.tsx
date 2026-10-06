@@ -86,9 +86,9 @@ export default function CreateNewsPage() {
           <span className="create-news-category">{categoryLabel}</span>
           <h3>{titulo.trim() || 'Título da publicação'}</h3>
           <p>{previewText(conteudo).slice(0, 220)}{conteudo.trim().length > 220 ? '…' : ''}</p>
-          <div className="create-news-author"><span>{user?.nome.slice(0, 1).toUpperCase()}</span><div><strong>{user?.nome}</strong><small>Direção CEMTN · Publicação nova</small></div></div>
+          <div className="create-news-author"><span>{user?.nome.slice(0, 1).toUpperCase()}</span><div><strong>{user?.nome}</strong><small>{user?.role === 'PROFESSOR' ? 'Professor' : 'Direção'} · Publicação nova</small></div></div>
           <ul><li><Icon name="check" /> Visível para todos os perfis</li><li><Icon name="check" /> Organizada pela categoria escolhida</li></ul>
-          <div className="create-news-tip"><Icon name="info" /><p>O Jornal não utiliza fotos genéricas de escolas. A identidade visual abstrata será aplicada automaticamente.</p></div>
+          <div className="create-news-tip"><Icon name="info" /><p>Confira o título, a capa e a categoria antes de publicar.</p></div>
         </aside>
 
         {errorMessage ? <p className="create-news-error" role="alert">{errorMessage}</p> : null}
