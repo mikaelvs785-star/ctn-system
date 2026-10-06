@@ -18,8 +18,9 @@ const identity = (u: {
   id: number;
   nome: string;
   email: string | null;
+  cpf?: string | null;
   role: string;
-}) => ({ id: u.id, nome: u.nome, email: u.email, role: u.role });
+}) => ({ id: u.id, nome: u.nome, email: u.email, role: u.role, cpfMascarado: u.cpf ? `***.***.***-${u.cpf.slice(-2)}` : undefined });
 
 @Injectable()
 export class AuthService {
@@ -123,7 +124,7 @@ export class AuthService {
     const {
       rows: [user],
     } = await this.db.query(
-      `SELECT u.id, u.nome, u.email, r.name AS role FROM public.session s
+      `SELECT u.id, u.nome, u.email, u.cpf, r.name AS role FROM public.session s
        JOIN public."user" u ON u.id = s."userId" JOIN public.role r ON r.id = u."roleId"
        WHERE s."tokenHash" = $1 AND s."expiresAt" > now()
          AND u.ativo = true AND u."statusCadastro" = 'ATIVO'`,
