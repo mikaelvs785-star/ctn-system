@@ -1,8 +1,9 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { listUsers, updateUserRegistrationStatus, type SystemUser } from '../../api/users'
 import { useAuth } from '../../auth/auth-context'
 import './DirectorUsersPage.css'
+import ManagedUserPhoto from '../../components/ManagedUserPhoto'
 
 type Filter = 'ALL' | 'PENDENTE' | 'DIRECAO' | 'PROFESSOR' | 'ALUNO'
 const filters: { value: Filter; label: string }[] = [
@@ -20,9 +21,6 @@ const statusLabels: Record<string, string> = {
   DESATIVADO: 'Desativado',
 }
 
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'CT'
-}
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value)).replace('.', '')
 }
@@ -40,27 +38,19 @@ export default function DirectorUsersPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [notice, setNotice] = useState('')
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (!token) return
-    setLoading(true)
-    try {
-      setUsers(await listUsers(token, signal))
-      setErrorMessage('')
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      const message = error instanceof Error ? error.message : 'Não foi possível carregar os usuários'
-      if (message === 'Sua sessão expirou') clearSession()
-      else setErrorMessage(message)
-    } finally {
-      if (!signal?.aborted) setLoading(false)
-    }
-  }, [clearSession, token])
-
   useEffect(() => {
-    const controller = new AbortController()
-    void load(controller.signal)
-    return () => controller.abort()
-  }, [load])
+    if (!token) return;
+    const controller = new AbortController();
+    listUsers(token, controller.signal).then(data => {
+      if (!controller.signal.aborted) { setUsers(data); setErrorMessage(''); }
+    }).catch(error => {
+      if(controller.signal.aborted)return;
+      const message = error instanceof Error ? error.message : 'Não foi possível carregar os usuários';
+      if(message === 'Sua sessão expirou')clearSession();
+      else setErrorMessage(message);
+    }).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
+    return ()=>controller.abort();
+  }, [clearSession, token]);
 
   const visibleUsers = useMemo(() => {
     const normalized = deferredQuery.trim().toLocaleLowerCase('pt-BR')
@@ -130,7 +120,7 @@ export default function DirectorUsersPage() {
         <div className="users-list">
           {visibleUsers.map((item) => (
             <article key={item.id} className={item.statusCadastro === 'PENDENTE' ? 'user-row-pending' : ''}>
-              <div className="users-list__identity"><span>{initials(item.nome)}</span><div><strong>{item.nome}</strong><small>{item.email ?? 'Cadastro por CPF'}</small></div></div>
+              <div className="users-list__identity"><ManagedUserPhoto key={`${item.id}:${item.updatedAt}`} id={item.id} name={item.nome} hasPhoto={Boolean(item.hasFoto)} token={token!} version={item.updatedAt}/><div><strong>{item.nome}</strong><small>{item.email ?? 'Cadastro por CPF'}</small></div></div>
               <div data-label="Perfil"><b>{roleLabels[item.role] ?? item.role}</b></div>
               <div data-label="CPF"><small>{item.cpfMascarado ?? 'Não cadastrado'}</small></div>
               <div data-label="Status"><i className={item.statusCadastro === 'ATIVO' ? 'active' : item.statusCadastro === 'PENDENTE' ? 'pending' : ''}><em />{statusLabels[item.statusCadastro]}</i></div>
