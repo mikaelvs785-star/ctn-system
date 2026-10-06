@@ -5,6 +5,7 @@ export type ManagedUserRole = 'ALUNO' | CreateUserRole
 
 export interface SystemUser {
   id: number
+  hasFoto?: boolean
   nome: string
   email: string | null
   cpfMascarado: string | null
@@ -128,4 +129,9 @@ export async function updateUserRegistrationStatus(
   const data = await readResponse(response, 'Não foi possível alterar o status do usuário')
   if (!isSystemUser(data)) throw new Error('O usuário retornou dados inválidos')
   return data
+}
+
+export async function getUserPhoto(id: number, token: string, signal?: AbortSignal) {
+ const response = await fetch(`${API_URL}/users/${id}/photo`, {headers:{Authorization:`Bearer ${token}`},signal,cache:'no-store'});
+ return await readResponse(response,'Não foi possível carregar a foto') as {foto:string|null;original:string|null};
 }
