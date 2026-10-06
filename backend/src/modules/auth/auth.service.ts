@@ -19,12 +19,19 @@ const identity = (u: {
   nome: string;
   email: string | null;
   cpf?: string | null;
+  foto?: string | null;
   role: string;
-}) => ({ id: u.id, nome: u.nome, email: u.email, role: u.role, cpfMascarado: u.cpf ? `***.***.***-${u.cpf.slice(-2)}` : undefined });
+}) => ({ id: u.id, nome: u.nome, email: u.email, role: u.role, foto: u.foto ?? null, cpfMascarado: u.cpf ? `***.***.***-${u.cpf.slice(-2)}` : undefined });
 
 @Injectable()
 export class AuthService {
   constructor(private readonly db: DatabaseService) {}
+
+  async updatePhoto(userId: number, foto: string) {
+    await this.db.query('UPDATE public."user" SET foto = NULLIF($1, $3), "updatedAt" = now() WHERE id = $2', [foto, userId, '']);
+    return { foto: foto || null };
+  }
+
 
   async limit(key: string, maximum = 10) {
     const { rows } = await this.db.query(
@@ -124,7 +131,7 @@ export class AuthService {
     const {
       rows: [user],
     } = await this.db.query(
-      `SELECT u.id, u.nome, u.email, u.cpf, r.name AS role FROM public.session s
+      `SELECT u.id, u.nome, u.email, u.cpf, u.foto, r.name AS role FROM public.session s
        JOIN public."user" u ON u.id = s."userId" JOIN public.role r ON r.id = u."roleId"
        WHERE s."tokenHash" = $1 AND s."expiresAt" > now()
          AND u.ativo = true AND u."statusCadastro" = 'ATIVO'`,
