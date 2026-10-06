@@ -35,8 +35,14 @@ export async function resetPassword(token: string, novaSenha: string) {
   }
 }
 
-export async function saveProfilePhoto(token: string, foto: string) {
- const response = await fetch(`${API_URL}/auth/photo`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ foto }) })
+export async function saveProfilePhoto(token: string, foto: string, original?: string) {
+ const response = await fetch(`${API_URL}/auth/photo`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ foto, original }) })
  if (!response.ok) throw new Error(response.status === 401 ? 'Sua sessão expirou' : 'Não foi possível salvar a foto. Tente novamente.')
  return response.json() as Promise<{ foto: string | null }>
+}
+
+export async function getProfilePhoto(token: string) {
+ const response = await fetch(`${API_URL}/auth/photo`, {headers:{Authorization:`Bearer ${token}`}, cache:'no-store'});
+ if (!response.ok) throw new Error('Não foi possível carregar a foto original.');
+ return response.json() as Promise<{original:string|null}>;
 }
