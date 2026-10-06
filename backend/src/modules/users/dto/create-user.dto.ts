@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsOptional,
   IsIn,
   IsNotEmpty,
   IsString,
@@ -20,12 +21,13 @@ export class CreateUserDto {
   )
   nome: string;
 
+  @IsOptional()
   @IsEmail()
   @MaxLength(254)
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim().toLowerCase() : value,
   )
-  email: string;
+  email?: string;
 
   @IsString()
   @Transform(({ value }: { value: unknown }) =>

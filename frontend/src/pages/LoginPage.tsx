@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context'
 import ThemeToggle from '../components/ThemeToggle'
-import { formatCpf } from '../utils/cpf'
+import { normalizeCpf } from '../utils/cpf'
 import './LoginPage.css'
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
   }, [navigate, status])
 
   function handleIdentifier(value: string) {
-    setIdentifier(value.includes('@') || /[a-z]/i.test(value) ? value : formatCpf(value))
+    setIdentifier(normalizeCpf(value))
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -69,9 +69,8 @@ export default function LoginPage() {
               <span>CPF</span>
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 8h8M8 12h5M8 16h4" /></svg>
-                <input type="text" value={identifier} onChange={(e) => handleIdentifier(e.target.value)} autoComplete="username" placeholder="000.000.000-00" disabled={submitting} required />
+                <input type="text" value={identifier} onChange={(e) => handleIdentifier(e.target.value)} inputMode="numeric" pattern="[0-9]{11}" autoComplete="username" placeholder="Digite os 11 números do CPF" disabled={submitting} required />
               </div>
-              <small className="login-migration-note">Conta administrativa antiga? Durante a migração, o e-mail continua aceito.</small>
             </label>
 
             <label className="form-field">
