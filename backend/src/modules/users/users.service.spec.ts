@@ -10,6 +10,15 @@ describe('UsersService', () => {
     query.mockResolvedValue({ rows: [] });
     await expect(service.findOne(1)).rejects.toBeInstanceOf(NotFoundException);
   });
+  it('returns photos without exposing other user fields', async () => {
+    query.mockResolvedValue({rows:[{foto:'crop',original:'full',cpf:'private'}]});
+    expect(await service.getPhoto(7)).toEqual({foto:'crop',original:'full'});
+    expect(query.mock.calls[0][1]).toEqual([7]);
+  });
+  it('returns 404 for a photo of a nonexistent user', async () => {
+    query.mockResolvedValue({rows:[]});
+    await expect(service.getPhoto(7)).rejects.toBeInstanceOf(NotFoundException);
+  });
   it('maps database uniqueness failures including concurrent registrations to 409', async () => {
     query.mockRejectedValue({ code: '23505' });
     await expect(
