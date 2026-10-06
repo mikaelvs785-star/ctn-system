@@ -68,10 +68,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const login = useCallback(async (identifier: string, password: string) => {
-    const trimmed = identifier.trim()
-    const body = trimmed.includes('@')
-      ? { email: trimmed.toLowerCase(), senha: password }
-      : { cpf: normalizeCpf(trimmed), senha: password }
+    const cpf = normalizeCpf(identifier)
+    if (cpf.length !== 11) throw new Error('Informe os 11 números do CPF')
+    const body = { cpf, senha: password }
 
     let response: Response
     try {
