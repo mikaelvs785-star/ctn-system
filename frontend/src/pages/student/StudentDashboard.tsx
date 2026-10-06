@@ -10,7 +10,6 @@ interface IconProps { name: IconName; size?: number }
 interface Activity { id: string; icon: IconName; text: string; time: string; path: string; timestamp: number }
 
 const IMPORTANT_CATEGORIES = new Set(['AVISO', 'COMUNICADO'])
-const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000
 
 function Icon({ name, size = 20 }: IconProps) {
   const paths: Record<IconName, ReactNode> = {
@@ -107,10 +106,6 @@ export default function StudentDashboard() {
   const highlights = news.slice(0, 4)
   const highlight = highlights[activeHighlight] ?? highlights[0]
   const headlines = news.slice(highlights.length, highlights.length + 2)
-  const now = Date.now()
-  const recentNewsCount = news.filter((item) => now - new Date(item.createdAt).getTime() <= SEVEN_DAYS).length
-  const importantCount = news.filter((item) => IMPORTANT_CATEGORIES.has(item.categoria) && now - new Date(item.createdAt).getTime() <= SEVEN_DAYS).length
-
   const activities = useMemo<Activity[]>(() => [
     ...news.slice(0, 4).map((item) => ({
       id: `news-${item.id}`,
@@ -144,11 +139,7 @@ export default function StudentDashboard() {
     <main className="student-dashboard">
       <header className="student-welcome"><div><div className="student-welcome__title"><h1>Olá, {firstName}.</h1><span>Aluno</span></div><p>Acompanhe as novidades e participe da comunidade CEMTN.</p></div></header>
 
-      <section className="student-stats" aria-label="Resumo do aluno">
-        <Link to="/aluno/jornal" className="student-stat student-stat--primary"><span className="student-stat__icon"><Icon name="news" /></span><span><small>Publicações novas</small><strong>{recentNewsCount.toString().padStart(2, '0')}</strong></span><Icon name="arrow" size={18} /></Link>
-        <Link to="/aluno/comunidades" className="student-stat"><span className="student-stat__icon"><Icon name="communities" /></span><span><small>Minhas comunidades</small><strong>{participating.length.toString().padStart(2, '0')}</strong></span></Link>
-        <Link to="/aluno/jornal" className="student-stat"><span className="student-stat__icon"><Icon name="bell" /></span><span><small>Avisos importantes</small><strong>{importantCount.toString().padStart(2, '0')}</strong></span></Link>
-      </section>
+      {news.find(item => IMPORTANT_CATEGORIES.has(item.categoria)) ? <Link className="student-announcement" to={`/aluno/jornal/${news.find(item => IMPORTANT_CATEGORIES.has(item.categoria))!.id}`}><Icon name="bell" /><strong>Comunicado</strong><span>{news.find(item => IMPORTANT_CATEGORIES.has(item.categoria))!.titulo}</span><Icon name="arrow" /></Link> : null}
 
       <div className="student-dashboard__grid">
         <section className="student-dashboard__news">
