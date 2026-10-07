@@ -1,0 +1,1 @@
+ALTER TABLE public."communityPost" ADD COLUMN IF NOT EXISTS imagem text, ADD COLUMN IF NOT EXISTS link text;
