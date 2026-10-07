@@ -49,3 +49,20 @@
  .community-composer { grid-template-columns: 36px minmax(0, 1fr); }
  .community-composer__attachments, .community-composer__toolbar { grid-column: 1 / -1; }
 }
+
+/* Stack author, timestamp and message so long names never squeeze the date. */
+.community-comments { gap: 18px; margin: 0 18px; padding: 18px 0; background: none; border-top: 1px solid var(--color-border); }
+.community-comments > div { align-items: flex-start; gap: 10px; min-width: 0; }
+.community-comments p { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; font-size: 14px; }
+.community-comments p strong { color: var(--color-ink); font-size: 13px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.community-post time { text-transform: none; font-size: 12px; line-height: 1.4; }
+.community-comments p time { display: block; }
+.community-comments p span { display: block; margin-top: 6px; padding: 10px 12px; border-radius: 0 8px 8px 8px; background: var(--color-surface-soft); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.community-post > header p { min-width: 0; }
+.community-post > header strong { overflow-wrap: anywhere; }
+.community-post__content { overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .community-comments { margin-inline: 12px; }
+  .community-comments .community-avatar--small { width: 30px; height: 30px; }
+  .community-comment-form { padding: 12px; }
+}
