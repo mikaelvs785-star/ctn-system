@@ -150,19 +150,18 @@ export default function StudentCommunityDetailPage() {
 
       {community.capa ? <img className="community-detail-cover" src={community.capa} alt="" /> : null}
       <header className="community-detail__header">
-        <div className="community-detail__symbol" aria-hidden="true">Σ</div>
         <div>
           <h1>{community.nome}</h1>
           <p>{community.descricao}</p>
-          <div><span>◉ Prof. {community.creatorName}</span><span>♙ {members.length} participantes</span><span>▤ {posts.length} publicações</span></div>
+          <div><span>{members.length} participantes</span><span>{posts.length} publicações</span></div>
         </div>
-        <strong>✓ Participando</strong>
+        <strong>Você participa</strong>
       </header>
 
       <div className="community-detail__layout">
         <section className="community-feed">
           <form className="community-composer" onSubmit={handleNewPost}>
-            <span className="community-avatar">{initials(user?.nome ?? '')}</span>
+            <span className="community-avatar">{user?.foto ? <img src={user.foto} alt="Sua foto de perfil" /> : initials(user?.nome ?? '')}</span>
             <label>
               <span className="sr-only">Nova publicação</span>
               <textarea value={newPost} onChange={(event) => setNewPost(event.target.value)} maxLength={2000} placeholder="Compartilhe algo com a comunidade..." />
@@ -172,11 +171,10 @@ export default function StudentCommunityDetailPage() {
 
           {actionMessage ? <p className="community-action-message" role="status">{actionMessage}</p> : null}
 
-          {posts.length ? posts.map((post, index) => (
+          {posts.length ? posts.map((post) => (
             <article className="community-post" key={post.id}>
-              {index === posts.length - 1 ? <div className="community-post__pin">◆ Publicação recente</div> : null}
               <header>
-                <span className="community-avatar">{initials(post.authorName || 'CEMTN')}</span>
+                <span className="community-avatar">{post.authorId === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(post.authorName || 'CEMTN')}</span>
                 <p><strong>{post.authorName || 'Participante CEMTN'}</strong><time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time></p>
               </header>
               <div className="community-post__content">{post.conteudo}</div>
@@ -185,7 +183,7 @@ export default function StudentCommunityDetailPage() {
                 <div className="community-comments">
                   {(comments[post.id] ?? []).map((comment) => (
                     <div key={comment.id}>
-                      <span className="community-avatar community-avatar--small">{initials(comment.authorName || 'CEMTN')}</span>
+                      <span className="community-avatar community-avatar--small">{comment.authorId === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(comment.authorName || 'CEMTN')}</span>
                       <p><strong>{comment.authorName || 'Participante CEMTN'}</strong><time dateTime={comment.createdAt}>{formatDate(comment.createdAt)}</time><span>{comment.conteudo}</span></p>
                     </div>
                   ))}
@@ -200,13 +198,15 @@ export default function StudentCommunityDetailPage() {
                 <button type="submit" disabled={!commentDrafts[post.id]?.trim() || Boolean(submitting)}>{submitting === `comment-${post.id}` ? 'Enviando...' : 'Comentar'}</button>
               </form>
             </article>
-          )) : <div className="community-feed__empty"><h2>A comunidade ainda não tem publicações</h2><p>Seja a primeira pessoa a compartilhar uma ideia ou dúvida.</p></div>}
+          )) : <div className="community-feed__empty"><h2>Comece a conversa</h2><p>Compartilhe uma ideia ou dúvida com o grupo.</p></div>}
         </section>
 
         <aside className="community-detail__aside">
-          <section><h2>Sobre a comunidade</h2><p>{community.descricao}</p><dl><div><dt>Área</dt><dd>{community.nome}</dd></div><div><dt>Responsável</dt><dd>Prof. {community.creatorName}</dd></div></dl></section>
+          <details className="community-info"><summary>Informações do grupo</summary>
+          <section><dl><div><dt>Responsável</dt><dd>Prof. {community.creatorName}</dd></div></dl></section>
           <section><h2>Regras de convivência</h2>{rules.length ? <ol>{rules.map((rule) => <li key={rule}>{rule}</li>)}</ol> : <p>Respeite todos os membros, mantenha o foco no tema e evite conteúdos fora do assunto.</p>}</section>
-          <section><div className="community-aside-title"><h2>Participantes ({members.length})</h2></div><div className="community-members">{members.slice(0, 8).map((member) => <span key={member.id} title={member.nome}>{initials(member.nome)}</span>)}{members.length > 8 ? <span>+{members.length - 8}</span> : null}</div></section>
+          <section><div className="community-aside-title"><h2>Participantes ({members.length})</h2></div><div className="community-members">{members.slice(0, 8).map((member) => <span key={member.id} title={member.nome}>{member.id === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(member.nome)}</span>)}{members.length > 8 ? <span>+{members.length - 8}</span> : null}</div></section>
+          </details>
         </aside>
       </div>
     </main>
