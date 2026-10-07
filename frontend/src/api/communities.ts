@@ -23,6 +23,8 @@ export interface CommunityMember {
 }
 
 export interface CommunityPost {
+  imagem?: string | null
+  link?: string | null
   id: number
   conteudo: string
   communityId: number
@@ -133,10 +135,10 @@ export async function listPostComments(communityId: number, postId: number, toke
   return data.filter(isComment)
 }
 
-export async function createCommunityPost(communityId: number, conteudo: string, token: string) {
+export async function createCommunityPost(communityId: number, conteudo: string, token: string, attachments: { imagem?: string; link?: string } = {}) {
   const data = await request(`/communities/${communityId}/posts`, token, {
     method: 'POST',
-    body: JSON.stringify({ conteudo }),
+    body: JSON.stringify({ conteudo, ...attachments }),
   })
   if (!isPost(data)) throw new Error('A publicação retornou dados inválidos')
   return data
