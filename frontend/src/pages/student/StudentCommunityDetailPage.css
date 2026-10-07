@@ -30,3 +30,22 @@
   .community-composer .community-avatar { width: 36px; height: 36px; }
   .community-composer button { grid-column: 2; justify-self: end; padding: 10px 18px; font-size: 14px; }
 }
+
+.community-composer { grid-template-columns: 40px minmax(0, 1fr); }
+.community-composer__attachments, .community-composer__toolbar { grid-column: 2; min-width: 0; }
+.community-composer__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.community-composer .community-attach-control { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 8px; border: 0; border-radius: 6px; background: none; color: var(--color-muted); font-size: 13px; font-weight: 500; cursor: pointer; }
+.community-attach-control svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.community-attach-control:focus-within { outline: 2px solid var(--color-blue); outline-offset: 2px; }
+.community-composer .community-publish { margin-left: auto; font-size: 14px; }
+.community-image-preview img { display: block; max-height: 200px; width: 100%; object-fit: contain; border-radius: 6px; background: var(--color-surface-soft); }
+.community-composer .community-image-preview button, .community-composer .community-link-field button { background: none; color: var(--color-muted); padding: 6px 0; font-size: 12px; font-weight: 500; }
+.community-link-field > span { display: block; margin: 6px 0; font-size: 13px; }
+.community-link-field input { width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box; }
+.community-post__image { display: block; margin: 16px 18px; }
+.community-post__image img { display: block; width: 100%; max-height: 480px; object-fit: contain; border-radius: 6px; background: var(--color-surface-soft); }
+.community-post__link { display: flex; justify-content: space-between; gap: 8px; margin: 16px 18px; padding: 12px; border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-blue); overflow-wrap: anywhere; font-size: 14px; text-decoration: none; }
+@media (max-width: 560px) {
+ .community-composer { grid-template-columns: 36px minmax(0, 1fr); }
+ .community-composer__attachments, .community-composer__toolbar { grid-column: 1 / -1; }
+}
