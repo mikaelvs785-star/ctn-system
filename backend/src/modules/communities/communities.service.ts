@@ -157,13 +157,13 @@ export class CommunitiesService {
       ).rows;
     });
   }
-  async createPost(id: number, conteudo: string, user: AuthUser) {
+  async createPost(id: number, conteudo: string, user: AuthUser, attachments: { imagem?: string; link?: string } = {}) {
     return this.db.transaction(async (c) => {
       await this.access(c, id, user);
       return (
         await c.query(
-          'INSERT INTO public."communityPost" (conteudo,"communityId","authorId","updatedAt") VALUES ($1,$2,$3,now()) RETURNING *',
-          [conteudo, id, user.id],
+          'INSERT INTO public."communityPost" (conteudo,"communityId","authorId",imagem,link,"updatedAt") VALUES ($1,$2,$3,$4,$5,now()) RETURNING *',
+          [conteudo, id, user.id, attachments.imagem || null, attachments.link || null],
         )
       ).rows[0];
     });
