@@ -17,6 +17,7 @@ import type { AuthRequest } from '../auth/auth.metadata.js';
 import { Role } from '../roles/role.enum.js';
 import {
   ContentDto,
+  CommunityPostDto,
   CreateCommunityDto,
   UpdateCommunityDto,
 } from './community.dto.js';
@@ -86,10 +87,10 @@ export class CommunitiesController {
   @Post(':id/posts')
   createPost(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: ContentDto,
+    @Body() dto: CommunityPostDto,
     @Req() req: AuthRequest,
   ) {
-    return this.service.createPost(id, dto.conteudo, req.user);
+    return this.service.createPost(id, dto.conteudo, req.user, dto);
   }
   @Patch(':id/posts/:postId')
   editPost(
