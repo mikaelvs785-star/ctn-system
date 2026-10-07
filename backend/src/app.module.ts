@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { NewsModule } from './modules/news/news.module.js';
 import { CommunitiesModule } from './modules/communities/communities.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { HealthController } from './health.controller.js';
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthController } from './health.controller.js';
     AuthModule,
     NewsModule,
     CommunitiesModule,
+    NotificationsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
