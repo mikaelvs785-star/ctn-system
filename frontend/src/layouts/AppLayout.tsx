@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/auth-context'
 import type { UserRole } from '../auth/auth.types'
+import NotificationPanel from '../components/NotificationPanel'
 import ThemeToggle from '../components/ThemeToggle'
 import './AppLayout.css'
 
@@ -142,9 +143,7 @@ export default function AppLayout() {
           <div className="app-topbar__title"><small>{roleLabels[user.role]}</small><span aria-hidden="true"> / </span><strong>{currentTitle}</strong></div>
           <div className="app-topbar__actions">
             <ThemeToggle />
-            <button className="app-icon-button app-notification" type="button" aria-label="Notificações">
-              <Icon name="bell" /><span />
-            </button>
+            <NotificationPanel />
             <div className="app-avatar app-avatar--small">{user.foto ? <img src={user.foto} alt="" /> : getInitials(user.nome)}</div>
             <div className="app-topbar__user"><strong>{user.nome}</strong><small>{roleLabels[user.role] ?? user.role}</small></div>
           </div>
