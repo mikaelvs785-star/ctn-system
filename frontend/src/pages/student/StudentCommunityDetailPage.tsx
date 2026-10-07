@@ -21,13 +21,14 @@ function initials(name: string) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value)).replace('.', '')
+  const date = new Date(value)
+  const now = new Date()
+  const zone = 'America/Sao_Paulo'
+  const day = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: zone }).format(d)
+  const time = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: zone }).format(date)
+  if (day(date) === day(now)) return `Hoje às ${time}`
+  const label = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', timeZone: zone, ...(date.getFullYear() !== now.getFullYear() ? { year: 'numeric' as const } : {}) }).format(date).replace('.', '')
+  return `${label} às ${time}`
 }
 
 export default function StudentCommunityDetailPage() {
@@ -201,7 +202,7 @@ export default function StudentCommunityDetailPage() {
             <article className="community-post" key={post.id}>
               <header>
                 <span className="community-avatar">{post.authorId === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(post.authorName || 'CEMTN')}</span>
-                <p><strong>{post.authorName || 'Participante CEMTN'}</strong><time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time></p>
+                <p><strong>{post.authorName || 'Participante CEMTN'}</strong><time dateTime={post.createdAt} title={new Date(post.createdAt).toLocaleString('pt-BR')}>{formatDate(post.createdAt)}</time></p>
               </header>
               {post.conteudo ? <div className="community-post__content">{post.conteudo}</div> : null}
               {post.imagem ? <div className="community-post__image"><img src={post.imagem} alt="Imagem anexada à publicação" loading="lazy" /></div> : null}
@@ -212,7 +213,7 @@ export default function StudentCommunityDetailPage() {
                   {(comments[post.id] ?? []).map((comment) => (
                     <div key={comment.id}>
                       <span className="community-avatar community-avatar--small">{comment.authorId === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(comment.authorName || 'CEMTN')}</span>
-                      <p><strong>{comment.authorName || 'Participante CEMTN'}</strong><time dateTime={comment.createdAt}>{formatDate(comment.createdAt)}</time><span>{comment.conteudo}</span></p>
+                      <p><strong>{comment.authorName || 'Participante CEMTN'}</strong><time dateTime={comment.createdAt} title={new Date(comment.createdAt).toLocaleString('pt-BR')}>{formatDate(comment.createdAt)}</time><span>{comment.conteudo}</span></p>
                     </div>
                   ))}
                 </div>
