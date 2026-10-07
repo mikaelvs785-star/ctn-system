@@ -13,6 +13,7 @@ import {
   type CommunitySummary,
 } from '../../api/communities'
 import { useAuth } from '../../auth/auth-context'
+import { prepareNewsCover } from '../../utils/news-cover'
 import './StudentCommunityDetailPage.css'
 
 function initials(name: string) {
@@ -37,6 +38,10 @@ export default function StudentCommunityDetailPage() {
   const [members, setMembers] = useState<CommunityMember[]>([])
   const [posts, setPosts] = useState<CommunityPost[]>([])
   const [comments, setComments] = useState<Record<number, CommunityComment[]>>({})
+  const [postImage, setPostImage] = useState('')
+  const [postLink, setPostLink] = useState('')
+  const [showLink, setShowLink] = useState(false)
+  const [preparingImage, setPreparingImage] = useState(false)
   const [newPost, setNewPost] = useState('')
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
   const [submitting, setSubmitting] = useState<string | null>(null)
@@ -83,18 +88,30 @@ export default function StudentCommunityDetailPage() {
     return () => controller.abort()
   }, [load])
 
+  async function selectPostImage(file?: File) {
+    if (!file) return
+    setPreparingImage(true)
+    setActionMessage('')
+    try { setPostImage(await prepareNewsCover(file)) }
+    catch (error) { setActionMessage(error instanceof Error ? error.message : 'Não foi possível preparar a imagem') }
+    finally { setPreparingImage(false) }
+  }
+
   async function handleNewPost(event: FormEvent) {
     event.preventDefault()
     const content = newPost.trim()
-    if (!token || !user || !content || submitting) return
+    if (!token || !user || (!content && !postImage && !postLink.trim()) || submitting || preparingImage) return
 
     setSubmitting('post')
     setActionMessage('')
     try {
-      const created = await createCommunityPost(id, content, token)
+      const created = await createCommunityPost(id, content, token, { imagem: postImage || undefined, link: postLink.trim() || undefined })
       setPosts((current) => [{ ...created, authorName: user.nome }, ...current])
       setComments((current) => ({ ...current, [created.id]: [] }))
       setNewPost('')
+      setPostImage('')
+      setPostLink('')
+      setShowLink(false)
       setActionMessage('Publicação enviada para a comunidade.')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Não foi possível publicar'
@@ -166,7 +183,16 @@ export default function StudentCommunityDetailPage() {
               <span className="sr-only">Nova publicação</span>
               <textarea value={newPost} onChange={(event) => setNewPost(event.target.value)} maxLength={2000} placeholder="Compartilhe algo com a comunidade..." />
             </label>
-            <button type="submit" disabled={!newPost.trim() || Boolean(submitting)}>{submitting === 'post' ? 'Publicando...' : 'Publicar'}</button>
+
+            <div className="community-composer__attachments">
+              {postImage ? <div className="community-image-preview"><img src={postImage} alt="Prévia da imagem da publicação" /><button type="button" onClick={() => setPostImage('')}>Remover imagem</button></div> : null}
+              {showLink ? <label className="community-link-field"><span>Link</span><input type="url" value={postLink} onChange={(event) => setPostLink(event.target.value)} placeholder="https://..." maxLength={2048} pattern="https?://.+" /><button type="button" onClick={() => { setPostLink(''); setShowLink(false) }}>Remover link</button></label> : null}
+            </div>
+            <div className="community-composer__toolbar">
+              <label className="community-attach-control"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8" cy="8" r="1" /><path d="m3 17 6-6 4 4 3-3 5 5" /></svg>{preparingImage ? 'Preparando...' : 'Imagem'}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={preparingImage || Boolean(submitting)} onChange={(event) => { void selectPostImage(event.target.files?.[0]); event.target.value = '' }} /></label>
+              <button type="button" className="community-attach-control" aria-expanded={showLink} onClick={() => setShowLink((current) => !current)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 13 4-4m-5 6-2 2a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 2 2-2a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0" /></svg>Link</button>
+              <button className="community-publish" type="submit" disabled={(!newPost.trim() && !postImage && !postLink.trim()) || Boolean(submitting) || preparingImage}>{submitting === 'post' ? 'Publicando...' : 'Publicar'}</button>
+            </div>
           </form>
 
           {actionMessage ? <p className="community-action-message" role="status">{actionMessage}</p> : null}
@@ -177,7 +203,9 @@ export default function StudentCommunityDetailPage() {
                 <span className="community-avatar">{post.authorId === user?.id && user.foto ? <img src={user.foto} alt="" /> : initials(post.authorName || 'CEMTN')}</span>
                 <p><strong>{post.authorName || 'Participante CEMTN'}</strong><time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time></p>
               </header>
-              <div className="community-post__content">{post.conteudo}</div>
+              {post.conteudo ? <div className="community-post__content">{post.conteudo}</div> : null}
+              {post.imagem ? <div className="community-post__image"><img src={post.imagem} alt="Imagem anexada à publicação" loading="lazy" /></div> : null}
+              {post.link && /^https?:\/\//i.test(post.link) ? <a className="community-post__link" href={post.link} target="_blank" rel="noopener noreferrer">{post.link}<span aria-hidden="true"> ↗</span></a> : null}
 
               {(comments[post.id] ?? []).length ? (
                 <div className="community-comments">
