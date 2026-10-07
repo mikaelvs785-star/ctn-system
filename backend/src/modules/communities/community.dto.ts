@@ -4,6 +4,7 @@
   MaxLength,
   Matches,
   ValidateIf,
+  IsUrl,
 } from 'class-validator';
 import { Trim } from '../../common/api.js';
 export class CreateCommunityDto {
@@ -48,4 +49,21 @@ export class UpdateCommunityDto {
 }
 export class ContentDto {
   @IsString() @Trim() @IsNotEmpty() @MaxLength(10000) conteudo: string;
+}
+
+export class CommunityPostDto {
+  @IsString() @Trim() @MaxLength(10000)
+  @ValidateIf((o, v) => Boolean(v) || (!o.imagem && !o.link))
+  @IsNotEmpty()
+  conteudo = '';
+
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString() @MaxLength(1500000)
+  @Matches(/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/)
+  imagem?: string;
+
+  @ValidateIf((_o, v) => v !== undefined)
+  @IsString() @MaxLength(2048)
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  link?: string;
 }
