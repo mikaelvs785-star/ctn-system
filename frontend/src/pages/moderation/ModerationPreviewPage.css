@@ -19,3 +19,14 @@
 .mp-footer{max-width:1440px;margin:1.3rem auto 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;color:var(--color-muted);font-size:.69rem}
 @media(max-width:1100px){.mp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.mp-workspace{grid-template-columns:minmax(0,1fr)}.mp-list{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:.7rem}.mp-report:nth-last-child(2){border-bottom:0}}
 @media(max-width:650px){.moderation-preview{padding-inline:1rem}.mp-topline{min-height:66px}.mp-environment{max-width:145px;font-size:.55rem;text-align:center}.mp-intro{margin-top:1.6rem;align-items:stretch;flex-direction:column;gap:1rem}.mp-intro-note{max-width:none}.mp-stats{gap:.55rem}.mp-stats article{padding:.75rem;gap:.6rem;align-items:start}.mp-stat-icon{width:2rem;height:2rem;border-radius:.55rem}.mp-stat-icon svg{width:1rem;height:1rem}.mp-stats small{font-size:.65rem}.mp-stats strong{font-size:1.3rem}.mp-stats article div span{font-size:.6rem}.mp-queue{padding:1rem .75rem .5rem}.mp-list{grid-template-columns:minmax(0,1fr)}.mp-report:nth-last-child(2){border-bottom:1px solid var(--color-border)}.mp-detail{padding:1rem}.mp-person time{display:none}.mp-section-heading{align-items:start}.mp-section-heading>.mp-pill{white-space:normal;text-align:center}.mp-decision{display:grid;grid-template-columns:minmax(0,1fr)}.mp-button{width:100%}.mp-footer{flex-direction:column}}
+
+/* Identificação explícita da origem do alerta */
+.mp-source-filters{display:flex;align-items:center;flex-wrap:wrap;gap:.45rem;margin:.2rem 0 .8rem;color:var(--color-muted);font-size:.75rem}
+.mp-source-filters>span{font-weight:750;margin-right:.15rem}
+.mp-source-filters button{padding:.42rem .68rem;border:1px solid var(--color-border);border-radius:999px;background:var(--color-panel);color:var(--color-muted);font-size:.72rem}
+.mp-source-filters button.active{border-color:var(--color-blue);background:var(--color-blue-soft);color:var(--color-blue);font-weight:800}
+.mp-source-tag{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:.28rem .5rem;border-radius:999px;font-size:.67rem;font-weight:750;line-height:1.25}
+.mp-source-user{color:#315b91;background:#eaf2ff}
+.mp-source-auto{color:#7c5a18;background:#fff3d8}
+.mp-detail .mp-section-heading .mp-source-tag{margin-top:.55rem}
+@media(max-width:640px){.mp-source-filters{align-items:flex-start}.mp-source-filters>span{width:100%}.mp-source-filters button{font-size:.68rem}}
