@@ -22,6 +22,7 @@ import LoginPage from '../pages/LoginPage'
 import RegisterStudentPage from '../pages/RegisterStudentPage'
 import AccessDeniedPage from '../pages/AccessDeniedPage'
 import ResetPasswordPage from '../pages/ResetPasswordPage'
+import ModerationPreviewPage from '../pages/moderation/ModerationPreviewPage'
 import HomeRedirect from './HomeRedirect'
 import ProtectedRoute from './ProtectedRoute'
 
@@ -33,6 +34,9 @@ export default function AppRoutes() {
       <Route path="/cadastro" element={<RegisterStudentPage />} />
       <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       <Route path="/acesso-negado" element={<AccessDeniedPage />} />
+
+      {/* Protótipo isolado: somente dados fictícios, sem integração com APIs. */}
+      <Route path="/preview/moderacao" element={<ModerationPreviewPage />} />
 
       <Route element={<ProtectedRoute allowedRoles={['ALUNO']} />}>
         <Route element={<AppLayout />}>
