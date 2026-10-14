@@ -3,13 +3,14 @@ import './ModerationPreviewPage.css'
 
 type Severity = 'Alta' | 'Média' | 'Baixa'
 type Status = 'Pendente' | 'Ocultada' | 'Liberada' | 'Em análise'
-type AlertItem = { id: number; author: string; initials: string; role: string; community: string; time: string; severity: Severity; category: string; message: string; reason: string; status: Status }
+type Source = 'Denúncia de usuário' | 'Detecção automática'
+type AlertItem = { id: number; source: Source; author: string; initials: string; role: string; community: string; time: string; severity: Severity; category: string; message: string; reason: string; status: Status }
 
 const seed: AlertItem[] = [
-  { id: 1048, author: 'Lucas Martins', initials: 'LM', role: 'Aluno', community: 'Turma 2º B', time: 'Hoje, 10:42', severity: 'Alta', category: 'Possível ameaça', message: 'Você vai ver o que acontece quando eu te encontrar depois da aula.', reason: 'A frase pode ser interpretada como ameaça e precisa de avaliação humana.', status: 'Pendente' },
-  { id: 1047, author: 'Mariana Costa', initials: 'MC', role: 'Aluna', community: 'Clube de Ciências', time: 'Hoje, 09:18', severity: 'Média', category: 'Linguagem ofensiva', message: 'Esse trabalho ficou horrível, você não sabe fazer nada.', reason: 'Linguagem potencialmente humilhante dirigida a outra pessoa.', status: 'Pendente' },
-  { id: 1046, author: 'Pedro Henrique', initials: 'PH', role: 'Aluno', community: 'Grêmio Estudantil', time: 'Ontem, 16:05', severity: 'Baixa', category: 'Linguagem inadequada', message: 'A reunião foi uma bagunça total.', reason: 'Expressão negativa sem alvo pessoal claro; pode ser um falso positivo.', status: 'Em análise' },
-  { id: 1045, author: 'Ana Clara Souza', initials: 'AS', role: 'Professora', community: 'Projeto de Leitura', time: 'Ontem, 14:30', severity: 'Baixa', category: 'Revisão automática', message: 'Pessoal, vamos discutir o resultado da atividade com respeito.', reason: 'Exemplo demonstrativo de alerta que pode ser liberado após revisão.', status: 'Liberada' },
+  { id: 1048, source: 'Denúncia de usuário', author: 'Lucas Martins', initials: 'LM', role: 'Aluno', community: 'Turma 2º B', time: 'Hoje, 10:42', severity: 'Alta', category: 'Possível ameaça', message: 'Você vai ver o que acontece quando eu te encontrar depois da aula.', reason: 'A frase pode ser interpretada como ameaça e precisa de avaliação humana.', status: 'Pendente' },
+  { id: 1047, source: 'Detecção automática', author: 'Mariana Costa', initials: 'MC', role: 'Aluna', community: 'Clube de Ciências', time: 'Hoje, 09:18', severity: 'Média', category: 'Linguagem ofensiva', message: 'Esse trabalho ficou horrível, você não sabe fazer nada.', reason: 'Linguagem potencialmente humilhante dirigida a outra pessoa.', status: 'Pendente' },
+  { id: 1046, source: 'Denúncia de usuário', author: 'Pedro Henrique', initials: 'PH', role: 'Aluno', community: 'Grêmio Estudantil', time: 'Ontem, 16:05', severity: 'Baixa', category: 'Linguagem inadequada', message: 'A reunião foi uma bagunça total.', reason: 'Expressão negativa sem alvo pessoal claro; pode ser um falso positivo.', status: 'Em análise' },
+  { id: 1045, source: 'Detecção automática', author: 'Ana Clara Souza', initials: 'AS', role: 'Professora', community: 'Projeto de Leitura', time: 'Ontem, 14:30', severity: 'Baixa', category: 'Revisão automática', message: 'Pessoal, vamos discutir o resultado da atividade com respeito.', reason: 'Exemplo demonstrativo de alerta que pode ser liberado após revisão.', status: 'Liberada' },
 ]
 
 type Filter = 'Todas' | 'Pendentes' | 'Alta gravidade' | 'Em análise' | 'Resolvidas'
@@ -32,6 +33,7 @@ function Icon({ name }: { name: 'shield' | 'search' | 'filter' | 'clock' | 'chec
 export default function ModerationPreviewPage() {
   const [items, setItems] = useState(seed)
   const [filter, setFilter] = useState<Filter>('Todas')
+  const [sourceFilter, setSourceFilter] = useState<'Todas' | Source>('Todas')
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState(1048)
   const [notice, setNotice] = useState('')
@@ -43,8 +45,9 @@ export default function ModerationPreviewPage() {
       (filter === 'Em análise' && item.status === 'Em análise') ||
       (filter === 'Resolvidas' && (item.status === 'Ocultada' || item.status === 'Liberada'))
     const term = query.trim().toLocaleLowerCase('pt-BR')
-    return byFilter && (!term || [item.author, item.community, item.category, item.message].some((value) => value.toLocaleLowerCase('pt-BR').includes(term)))
-  }), [items, filter, query])
+    const bySource = sourceFilter === 'Todas' || item.source === sourceFilter
+    return byFilter && bySource && (!term || [item.author, item.community, item.category, item.message].some((value) => value.toLocaleLowerCase('pt-BR').includes(term)))
+  }), [items, filter, sourceFilter, query])
   const selected = visible.find((item) => item.id === selectedId) ?? visible[0]
   const pending = items.filter((item) => item.status === 'Pendente').length
   const high = items.filter((item) => item.severity === 'Alta' && item.status !== 'Ocultada' && item.status !== 'Liberada').length
@@ -76,16 +79,17 @@ export default function ModerationPreviewPage() {
         <div className="mp-section-heading"><div><h2>Fila de alertas</h2><p>Selecione um registro para revisar</p></div><span>{visible.length} itens</span></div>
         <label className="mp-search"><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar pessoa, comunidade ou texto" /></label>
         <div className="mp-filters"><Icon name="filter" />{(['Todas', 'Pendentes', 'Alta gravidade', 'Em análise', 'Resolvidas'] as Filter[]).map((item) => <button type="button" key={item} onClick={() => { setFilter(item); setSelectedId(0) }} className={filter === item ? 'active' : ''}>{item}</button>)}</div>
+        <div className="mp-source-filters" aria-label="Filtrar por origem"><span>Origem:</span>{(['Todas', 'Denúncia de usuário', 'Detecção automática'] as const).map((source) => <button type="button" key={source} onClick={() => { setSourceFilter(source); setSelectedId(0) }} className={sourceFilter === source ? 'active' : ''}>{source === 'Todas' ? 'Todas' : source === 'Denúncia de usuário' ? 'Denúncias' : 'Automáticos'}</button>)}</div>
         <div className="mp-list">{visible.map((item) => <button type="button" key={item.id} onClick={() => setSelectedId(item.id)} className={'mp-report ' + (selected && selected.id === item.id ? 'selected' : '')}>
-          <i className={'mp-dot mp-dot-' + item.severity.toLowerCase()} /><span className="mp-report-content"><span className="mp-report-meta"><strong>#{item.id}</strong><span>{item.time}</span></span><strong className="mp-report-title">{item.category}</strong><span className="mp-author">{item.author} · {item.community}</span><span className="mp-report-bottom"><span className={'mp-pill mp-pill-' + item.severity.toLowerCase()}>{item.severity}</span><span className="mp-status">{item.status}</span></span></span><span className="mp-report-arrow"><Icon name="arrow" /></span>
+          <i className={'mp-dot mp-dot-' + item.severity.toLowerCase()} /><span className="mp-report-content"><span className="mp-report-meta"><strong>#{item.id}</strong><span>{item.time}</span></span><strong className="mp-report-title">{item.category}</strong><span className={'mp-source-tag ' + (item.source === 'Denúncia de usuário' ? 'mp-source-user' : 'mp-source-auto')}>{item.source}</span><span className="mp-author">{item.author} · {item.community}</span><span className="mp-report-bottom"><span className={'mp-pill mp-pill-' + item.severity.toLowerCase()}>{item.severity}</span><span className="mp-status">{item.status}</span></span></span><span className="mp-report-arrow"><Icon name="arrow" /></span>
         </button>)}{visible.length === 0 && <div className="mp-empty">Nenhum alerta encontrado com esses filtros.</div>}</div>
       </div>
       <div className="mp-detail">{selected ? <>
-        <div className="mp-section-heading"><div><p className="mp-eyebrow">DETALHES DO REGISTRO</p><h2>Alerta #{selected.id}</h2></div><span className={'mp-pill mp-pill-' + selected.severity.toLowerCase()}>{selected.severity} gravidade</span></div>
+        <div className="mp-section-heading"><div><p className="mp-eyebrow">DETALHES DO REGISTRO</p><h2>Alerta #{selected.id}</h2><span className={'mp-source-tag ' + (selected.source === 'Denúncia de usuário' ? 'mp-source-user' : 'mp-source-auto')}>{selected.source}</span></div><span className={'mp-pill mp-pill-' + selected.severity.toLowerCase()}>{selected.severity} gravidade</span></div>
         <div className="mp-person"><span className="mp-avatar">{selected.initials}</span><span><strong>{selected.author}</strong><small>{selected.role} · {selected.community}</small></span><time>{selected.time}</time></div>
-        <div className="mp-content-label"><span>CONTEÚDO SINALIZADO</span><span><Icon name="eye" /> Texto de exemplo</span></div>
+        <div className="mp-content-label"><span>CONTEÚDO SINALIZADO</span><span><Icon name="eye" /> {selected.source === 'Denúncia de usuário' ? 'Conteúdo denunciado' : 'Conteúdo sinalizado automaticamente'}</span></div>
         <blockquote className="mp-message">{selected.message}</blockquote>
-        <div className="mp-analysis"><span className="mp-analysis-icon"><Icon name="shield" /></span><div><strong>Por que foi sinalizado</strong><p>{selected.reason}</p><small>Categoria sugerida: {selected.category}</small></div></div>
+        <div className="mp-analysis"><span className="mp-analysis-icon"><Icon name="shield" /></span><div><strong>Por que foi sinalizado</strong><p>{selected.reason}</p><small>Categoria sugerida: {selected.category}</small><small>Origem do alerta: {selected.source}. A origem ajuda a contextualizar, mas não determina a decisão.</small></div></div>
         <div className="mp-decision"><div><h3>Registrar decisão</h3><p>As ações abaixo alteram apenas os dados desta demonstração.</p></div>
           <button type="button" className="mp-button mp-allow" onClick={() => decide(selected.id, 'Liberada', 'Liberação')}><Icon name="check" /> Liberar conteúdo</button>
           <button type="button" className="mp-button mp-hide" onClick={() => decide(selected.id, 'Ocultada', 'Ocultação')}><Icon name="eye" /> Marcar como ocultada</button>
