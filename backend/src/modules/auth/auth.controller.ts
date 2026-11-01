@@ -22,6 +22,7 @@ import { AuthService } from './auth.service.js';
 import { Public } from './auth.metadata.js';
 import type { AuthRequest } from './auth.metadata.js';
 import { isValidCpf, normalizeCpf } from '../../common/cpf.js';
+import { getRateLimitIp } from '../../common/client-ip.js';
 
 export class LoginDto {
   @IsOptional()
@@ -103,7 +104,7 @@ export class AuthController {
     if (!isValidCpf(dto.cpf)) {
       throw new BadRequestException('CPF inválido');
     }
-    return this.auth.registerStudent(dto, req.ip ?? 'unknown');
+    return this.auth.registerStudent(dto, getRateLimitIp(req));
   }
 
   @Public()
